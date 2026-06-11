@@ -1,0 +1,25 @@
+name: Debug Repo Structure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Documentation Repo
+        uses: actions/checkout@v4
+        with:
+          repository: mja65/Emu68-Imager
+
+      - name: List Files and Configs
+        run: |
+          echo "=== ROOT FILES ==="
+          ls -la
+          
+          echo "=== CHECKING CONFIGURATION ==="
+          if [ -f _config.yml ]; then
+            cat _config.yml
+          else
+            echo "No _config.yml found."
+          fi

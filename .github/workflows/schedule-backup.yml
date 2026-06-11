@@ -1,0 +1,65 @@
+name: Periodic Archive of Emu68-Imager (Jekyll)
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Runs every Sunday at midnight
+  workflow_dispatch: # Allows manual runs
+
+jobs:
+  archive-repo-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to update the release
+    steps:
+      - name: Checkout Emu68-Imager Documentation Repo
+        uses: actions/checkout@v4
+        with:
+          repository: mja65/Emu68-Imager
+          path: source-files
+
+      # 1. Set up Ruby
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      # 2. Install Jekyll, the Primer theme, and the crucial missing front-matter plugin
+      - name: Install Jekyll & Plugins
+        run: gem install jekyll bundler jekyll-theme-primer jekyll-optional-front-matter
+
+      # 3. Create the configuration file and explicitly enable the plugin
+      - name: Create Temporary Jekyll Config
+        run: |
+          cd source-files
+          echo "source: docs" > _config.yml
+          echo "destination: compiled-site" >> _config.yml
+          echo "theme: jekyll-theme-primer" >> _config.yml
+          echo "permalink: /:basename.html" >> _config.yml
+          echo "plugins:" >> _config.yml
+          echo "  - jekyll-optional-front-matter" >> _config.yml
+
+      # 4. Build the Jekyll Site
+      - name: Build Jekyll Site
+        run: |
+          cd source-files
+          jekyll build
+
+      # 5. Zip the compiled directory (now containing converted HTML)
+      - name: Package HTML Documentation
+        run: |
+          cd source-files/compiled-site
+          zip -r ../../Emu68-Imager-Documentation.zip . -x ".*" "*/.*"
+
+      # 6. Upload/Update the zip archive in your dedicated release entry
+      - name: Upload Backup to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: emu68-documentation
+          name: "Emu68-Imager Documentation"
+          body: "This dedicated release entry contains documentation for Emu68 Imager. There is no need to download this file as Emu68 Imager will automatically do so."
+          files: Emu68-Imager-Documentation.zip
+          allowUpdates: true
+          makeLatest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

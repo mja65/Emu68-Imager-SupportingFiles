@@ -1,0 +1,19 @@
+.key Switch1/S,Arg1/K,ArgX/M
+.bra {
+.ket }
+; $VER: WHDLoad-Cleanup 1.0 (26.06.26)    
+;
+;
+; example script to be used with WHDLoad option ExecuteCleanup
+; arguments can be specified using WHDLoad option ExecuteArgs
+; - restore emulation settings
+; - restart all software which has been stopped previously with ExecuteStartup
+;
+
+If $IPStack EQ ROADSHOW
+   SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=Roadshow Device=$ConnectionType
+ENDIF
+If $IPStack EQ MIAMI
+   SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=MIAMI Device=$ConnectionType
+ENDIF
+

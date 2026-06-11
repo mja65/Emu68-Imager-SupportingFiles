@@ -1,0 +1,27 @@
+.key Switch1/S,Arg1/K,ArgX/M
+.bra {
+.ket }
+; $VER: WHDLoad-Startup 1.0 (26.06.26)    
+;
+;
+; example script to be used with WHDLoad option ExecuteStartup
+; arguments can be specified using WHDLoad option ExecuteArgs
+; - stop all software which can cause interrupts with external hardware
+; - optionally free memory to allow WHDLoad better PreLoad
+; - adapt emulation parameters
+;
+        
+c:areweonline
+If $RC EQ 0
+   If $IPStack EQ ROADSHOW
+      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=Disconnect IPStack=Roadshow SwitchKeepEnvStatus
+   ENDIF
+	If $IPStack EQ MIAMI
+      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=Disconnect IPStack=MIAMI SwitchKeepEnvStatus
+   ENDIF
+ELSE
+	Unsetenv IPStack
+	Unsetenv ConnectionType
+ENDIF
+
+
