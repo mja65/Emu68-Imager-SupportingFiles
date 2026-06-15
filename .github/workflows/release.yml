@@ -20,6 +20,8 @@ jobs:
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
+          name: "Emu68 Imager Supporting Files"
+          body: "This release contains the supporting files used by Emu68 Imager. There is no need to download this file as Emu68 Imager will automatically do so."
           files: Emu68ImagerSupportingFiles-${{ github.event.release.tag_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
