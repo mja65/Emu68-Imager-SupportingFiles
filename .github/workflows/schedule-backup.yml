@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to update the release
+      pages: read     # Needed to read Pages configuration
     steps:
       - name: Checkout Emu68-Imager Documentation Repo
         uses: actions/checkout@v4
@@ -17,41 +18,27 @@ jobs:
           repository: mja65/Emu68-Imager
           path: source-files
 
-      # 1. Set up Ruby (Jekyll's prerequisite)
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      # 1. Use GitHub's official Pages configuration setup
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
         with:
-          ruby-version: '3.2'
-          bundler-cache: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Install Jekyll and the official GitHub Pages environment package
-      - name: Install Jekyll & GitHub Pages Dependencies
-        run: |
-          cd source-files
-          if [ -f Gemfile ]; then
-            bundle install
-          else
-            gem install jekyll bundler github-pages
-          fi
+      # 2. Use GitHub's official Jekyll builder action
+      # This builds your site EXACTLY how it looks online, turning .md into .html
+      - name: Build Jekyll with GitHub Pages Action
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./source-files
+          destination: ./compiled-site
 
-      # 3. Build the Jekyll Site using GitHub's exact configuration rules
-      - name: Build Jekyll Site
-        run: |
-          cd source-files
-          if [ -f Gemfile ]; then
-            bundle exec jekyll build
-          else
-            # Force Jekyll to use the github-pages plugin for raw markdown conversion
-            jekyll build --p github-pages
-          fi
-
-      # 4. Zip ONLY the generated HTML directory (_site)
+      # 3. Zip the compiled directory
       - name: Package HTML Documentation
         run: |
-          cd source-files/_site
-          zip -r ../../Emu68-Imager-Latest-Backup.zip . -x ".*" "*/.*"
+          cd compiled-site
+          zip -r ../Emu68-Imager-Latest-Backup.zip . -x ".*" "*/.*"
 
-      # 5. Upload/Update the zip archive in your dedicated release entry
+      # 4. Upload/Update the zip archive in your dedicated release entry
       - name: Upload Backup to Release
         uses: softprops/action-gh-release@v2
         with:
