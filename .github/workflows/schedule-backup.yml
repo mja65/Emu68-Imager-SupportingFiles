@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to update the release
-      pages: read     # Needed to read Pages configuration
     steps:
       - name: Checkout Emu68-Imager Documentation Repo
         uses: actions/checkout@v4
@@ -18,27 +17,30 @@ jobs:
           repository: mja65/Emu68-Imager
           path: source-files
 
-      # 1. Use GitHub's official Pages configuration setup
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      # 1. Set up Ruby
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ruby-version: '3.2'
+          bundler-cache: true
 
-      # 2. Use GitHub's official Jekyll builder action
-      # This builds your site EXACTLY how it looks online, turning .md into .html
-      - name: Build Jekyll with GitHub Pages Action
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./source-files
-          destination: ./compiled-site
+      # 2. Install Jekyll and the standard GitHub fallback theme
+      - name: Install Jekyll & Primer Theme
+        run: gem install jekyll bundler jekyll-theme-primer
 
-      # 3. Zip the compiled directory
+      # 3. Build the site pointing directly to the docs folder using the default theme
+      - name: Build Jekyll Site from Docs Folder
+        run: |
+          cd source-files
+          jekyll build --source docs --destination compiled-site --theme jekyll-theme-primer
+
+      # 4. Zip the compiled directory (contains your converted HTML and pictures)
       - name: Package HTML Documentation
         run: |
-          cd compiled-site
-          zip -r ../Emu68-Imager-Latest-Backup.zip . -x ".*" "*/.*"
+          cd source-files/compiled-site
+          zip -r ../../Emu68-Imager-Latest-Backup.zip . -x ".*" "*/.*"
 
-      # 4. Upload/Update the zip archive in your dedicated release entry
+      # 5. Upload/Update the zip archive in your dedicated release entry
       - name: Upload Backup to Release
         uses: softprops/action-gh-release@v2
         with:
