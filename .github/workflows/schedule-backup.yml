@@ -1,0 +1,41 @@
+name: Periodic Archive of Emu68-Imager
+
+on:
+  schedule:
+    # This runs the job every Sunday at midnight UTC (10:00 AM Monday AEST)
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    # This allows you to click a button in the Actions tab to run it manually whenever you want
+
+jobs:
+  archive-external-repo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # 1. Check out the Emu68-Imager repository into a subfolder named 'source-files'
+      - name: Checkout Emu68-Imager
+        uses: actions/checkout@v4
+        with:
+          repository: mja65/Emu68-Imager
+          path: source-files
+
+      # 2. Package everything into a timestamped zip file
+      - name: Package Application
+        run: |
+          # Get current date to tag the archive filename (e.g., 2026-06-15)
+          CURRENT_DATE=$(date +'%Y-%m-%d')
+          
+          cd source-files/
+          zip -r ../Emu68-Imager-Archive-${CURRENT_DATE}.zip . -x ".*" "*/.*"
+
+      # 3. Upload the archive as a GitHub Release
+      - name: Create Backup Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: archive-${{ github.run_id }}
+          name: "Automated Archive (${{ github.run_id }})"
+          body: "Periodic backup of files fetched from mja65/Emu68-Imager."
+          files: Emu68-Imager-Archive-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
