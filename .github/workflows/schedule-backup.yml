@@ -11,7 +11,6 @@ jobs:
     permissions:
       contents: write # Needed to update the release
     steps:
-      # FIX: Force the checkout to target your specific documentation repository
       - name: Checkout Emu68-Imager Documentation Repo
         uses: actions/checkout@v4
         with:
@@ -25,24 +24,25 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
 
-      # 2. Install Jekyll and dependencies
-      - name: Install Jekyll
+      # 2. Install Jekyll and the official GitHub Pages environment package
+      - name: Install Jekyll & GitHub Pages Dependencies
         run: |
           cd source-files
           if [ -f Gemfile ]; then
             bundle install
           else
-            gem install jekyll bundler
+            gem install jekyll bundler github-pages
           fi
 
-      # 3. Build the Jekyll Site to HTML (including pictures)
+      # 3. Build the Jekyll Site using GitHub's exact configuration rules
       - name: Build Jekyll Site
         run: |
           cd source-files
           if [ -f Gemfile ]; then
             bundle exec jekyll build
           else
-            jekyll build
+            # Force Jekyll to use the github-pages plugin for raw markdown conversion
+            jekyll build --p github-pages
           fi
 
       # 4. Zip ONLY the generated HTML directory (_site)
