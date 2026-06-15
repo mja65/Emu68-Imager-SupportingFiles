@@ -2,30 +2,27 @@ name: Periodic Archive of Emu68-Imager (Jekyll)
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # Runs every Sunday at midnight
-  workflow_dispatch: # Allows manual runs
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
 
 jobs:
   archive-repo-docs:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to update the release
+      contents: write
     steps:
       - name: Checkout Emu68-Imager
         uses: actions/checkout@v4
         with:
           path: source-files
 
-      # 1. Set up Ruby (Jekyll's prerequisite)
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
           bundler-cache: true
 
-      # 2. Install Jekyll and dependencies
-      # If your repo has a Gemfile, it will use that. Otherwise, it installs standard Jekyll.
-       Cav- name: Install Jekyll
+      - name: Install Jekyll
         run: |
           cd source-files
           if [ -f Gemfile ]; then
@@ -34,8 +31,6 @@ jobs:
             gem install jekyll bundler
           fi
 
-      # 3. Build the Jekyll Site to HTML
-      # Jekyll outputs the compiled HTML site into a folder called '_site'
       - name: Build Jekyll Site
         run: |
           cd source-files
@@ -45,13 +40,11 @@ jobs:
             jekyll build
           fi
 
-      # 4. Zip ONLY the generated HTML directory (_site)
-       Cav- name: Package HTML Documentation
+      - name: Package HTML Documentation
         run: |
           cd source-files/_site
           zip -r ../../Emu68-Imager-Latest-Backup.zip . -x ".*" "*/.*"
 
-      # 5. Upload/Update the zip archive in your dedicated release entry
       - name: Upload Backup to Release
         uses: softprops/action-gh-release@v2
         with:
