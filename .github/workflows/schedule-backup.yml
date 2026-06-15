@@ -24,12 +24,11 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
 
-      # 2. Install Jekyll and the standard GitHub fallback theme
-      - name: Install Jekyll & Primer Theme
-        run: gem install jekyll bundler jekyll-theme-primer
+      # 2. Install Jekyll, the Primer theme, and the crucial missing front-matter plugin
+      - name: Install Jekyll & Plugins
+        run: gem install jekyll bundler jekyll-theme-primer jekyll-optional-front-matter
 
-      # 3. Create a temporary config file to define the source directory and theme
-      # This handles formatting bare markdown files to HTML seamlessly
+      # 3. Create the configuration file and explicitly enable the plugin
       - name: Create Temporary Jekyll Config
         run: |
           cd source-files
@@ -37,6 +36,8 @@ jobs:
           echo "destination: compiled-site" >> _config.yml
           echo "theme: jekyll-theme-primer" >> _config.yml
           echo "permalink: /:basename.html" >> _config.yml
+          echo "plugins:" >> _config.yml
+          echo "  - jekyll-optional-front-matter" >> _config.yml
 
       # 4. Build the Jekyll Site
       - name: Build Jekyll Site
@@ -44,7 +45,7 @@ jobs:
           cd source-files
           jekyll build
 
-      # 5. Zip the compiled directory (contains your converted HTML and pictures)
+      # 5. Zip the compiled directory (now containing converted HTML)
       - name: Package HTML Documentation
         run: |
           cd source-files/compiled-site
