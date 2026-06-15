@@ -55,10 +55,10 @@ jobs:
       - name: Upload Backup to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: html-documentation-backup
-          name: "Emu68-Imager Latest HTML Backup"
-          body: "This dedicated release entry contains the most recent periodically generated Jekyll HTML documentation."
-          files: Emu68-Imager-Latest-Backup.zip
+          tag_name: emu68-documentation
+          name: "Emu68-Imager Documentation"
+          body: "This dedicated release entry contains documentation for Emu68 Imager. There is no need to download this file as Emu68 Imager will automatically do so."
+          files: Emu68-Imager-Documentation.zip
           allowUpdates: true
           makeLatest: false
         env:
