@@ -28,19 +28,29 @@ jobs:
       - name: Install Jekyll & Primer Theme
         run: gem install jekyll bundler jekyll-theme-primer
 
-      # 3. Build the site pointing directly to the docs folder using the default theme
-      - name: Build Jekyll Site from Docs Folder
+      # 3. Create a temporary config file to define the source directory and theme
+      # This handles formatting bare markdown files to HTML seamlessly
+      - name: Create Temporary Jekyll Config
         run: |
           cd source-files
-          jekyll build --source docs --destination compiled-site --theme jekyll-theme-primer
+          echo "source: docs" > _config.yml
+          echo "destination: compiled-site" >> _config.yml
+          echo "theme: jekyll-theme-primer" >> _config.yml
+          echo "permalink: /:basename.html" >> _config.yml
 
-      # 4. Zip the compiled directory (contains your converted HTML and pictures)
+      # 4. Build the Jekyll Site
+      - name: Build Jekyll Site
+        run: |
+          cd source-files
+          jekyll build
+
+      # 5. Zip the compiled directory (contains your converted HTML and pictures)
       - name: Package HTML Documentation
         run: |
           cd source-files/compiled-site
           zip -r ../../Emu68-Imager-Latest-Backup.zip . -x ".*" "*/.*"
 
-      # 5. Upload/Update the zip archive in your dedicated release entry
+      # 6. Upload/Update the zip archive in your dedicated release entry
       - name: Upload Backup to Release
         uses: softprops/action-gh-release@v2
         with:
