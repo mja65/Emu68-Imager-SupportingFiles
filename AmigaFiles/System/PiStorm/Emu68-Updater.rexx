@@ -85,9 +85,8 @@ Call CreateFolder(PrerequisiteExtractFolder)
 Call CreateFolder(VersionDataFolder)
 Call CreateFolder(Emu68UpdaterScriptFolder)
 
-UpdateSheetScriptGID = '1689832058'
-UpdateSheetGID = '6947660'
-UpdateSheetURL = "https://docs.google.com/spreadsheets/d/12UcKD7INDH9y7Tw_w1q3ebQOUS9JtARIs8Z9JWfLUWg/export?format=tsv&gid="
+UpdateSheetGID = '1795234383'
+UpdateSheetURL = "https://docs.google.com/spreadsheets/d/1GeggL_zOH4MpJs-Kx0ywXR6RyOwLbp7Wb0_9qcTYftw/export?format=tsv&gid="
 
 UpdateFilePath = TempFolder||"/Update.txt"
 ScriptUpdateFilePath = TempFolder||"/ScriptUpdate.txt"
@@ -137,54 +136,21 @@ If ~Exists('c:unzip') then DO
    else vCmd
 END
 
-Call DownloadFile('Getting link to server',UpdateSheetURL||UpdateSheetScriptGID,ScriptUpdateFilePath,3,0)
-
-if ~Exists(ScriptUpdateFilePath) then call CloseProgram("Download Failed",10,3)
-
-If ReadFile(ScriptUpdateFilePath,ScriptURL) then do
-   URL = strip(ScriptURL.1)
-   Call DownloadFile('Downloading Emu68 Updater',URL,Emu68UpdaterScriptFolder||'/Emu68-Updater.rexx',3,0)
-   VersionNewScript = GetVersion(Emu68UpdaterScriptFolder||'/Emu68-Updater.rexx','FILE')
-   If EXISTS(DefaultScriptPath||'/Emu68-Updater.rexx') then VersionOldScriptPath = DefaultScriptPath||'/Emu68-Updater.rexx'
-   ELSE DO
-      If right(ScriptPath,1) = ':' | right(ScriptPath,1) = '/' then VersionOldScriptPath = ScriptPath||'Emu68-Updater.rexx'
-      else VersionOldScriptPath = ScriptPath||'/Emu68-Updater.rexx'
-   END
-   VersionOldScript = GetVersion(VersionOldScriptPath,'FILE')
-   If VersionOldScript ~= 'ERROR' then DO   
-      UpdateNeeded = CheckUpdateNeeded(VersionOldScript,VersionNewScript)
-      say 'Current version of script: 'VersionOldScript'. Version of script on server: 'VersionNewScript'.'
-   END
-   ELSE DO
-      vCmd = 'echo "Current version of Script cannot be found! Do you want to overwrite with server version ('VersionNewScript')? Y/N" NOLINE'
-      vCmd
-      Pull Response
-      if upper(Response)='Y' | upper(Response)='YES' then UpdateNeeded = 'TRUE'
-      ELSE UpdateNeeded = 'FALSE'   
-   END   
-   if UpdateNeeded = 'TRUE' then DO
-      say 'Script needs updating! Please restart Emu68 Updater to complete the update'
-      If Exists(DefaultScriptPath||'/Emu68-Updater.rexx') then vCmd = 'copyreplace >NIL: FROM 'Emu68UpdaterScriptFolder'/Emu68-Updater.rexx TO 'DefaultScriptPath' CLONE FOOVR QUIET'
-      ELSE vCmd = 'copyreplace >NIL: FROM 'Emu68UpdaterScriptFolder'/Emu68-Updater.rexx TO 'ScriptPath' CLONE FOOVR QUIET'
-      If DEBUG = 'TRUE' then say vCmd
-      else vCmd
-      EXIT
-   END
-   ELSE SAY 'Script is up-to-date'
-end
-
 Say ''
 
-vCmd = 'SYS:C/EMU68INFO variant >'PiStormVariantPath 
+vCmd = 'SYS:C/version brcm-sdhc.device >NIL:'
 VCmd
 
 IF RC>0 then DO 
-   Say 'Identifying variant of PiStorm: You are not running PiStorm'
+   Say 'You are not running PiStorm'
    PistormVariant='None'
    Flag_UpdateEmu68 = "FALSE"
    Flag_UpdateVideoCore = "FALSE"
 END
 else DO
+   say 'Identifying variant of PiStorm:'
+	vCmd = 'SYS:C/EMU68INFO variant >'PiStormVariantPath 
+   VCmd
    If ~READFILE(PiStormVariantPath,PiStormVariantLine) then Call CloseProgram("Error reading PiStorm variant",10,3) 
    'delete 'PiStormVariantPath' QUIET >NIL:' 
    PistormVariant = PiStormVariantLine.1
@@ -293,7 +259,7 @@ end
 
 /* Stage One - Retrieve List of Files for Update - Start */
 
-Call DownloadFile('Stage 1 - Retrieve List of Files for Update',UpdateSheetURL||UpdateSheetGID,UpdateFilePath,3,0)
+if ~Exists(UpdateFilePath) then Call DownloadFile('Stage 1 - Retrieve List of Files for Update',UpdateSheetURL||UpdateSheetGID,UpdateFilePath,3,0)
 
 if ~Exists(UpdateFilePath) then call CloseProgram("Download Failed",10,3)
 
@@ -327,7 +293,7 @@ END
 
 ListofUpdateLinesCleansed.0 = Counter
 
-/* Say 'Found 'ListofUpdateLinesCleansed.0' lines to process' */
+Say 'Found 'ListofUpdateLinesCleansed.0' lines to process'
 
 
 /* Stage One - Retrieve List of Files for Update - Finish */
@@ -343,20 +309,21 @@ PackageNametoReport = ''
 Do i = 1 to ListofUpdateLinesCleansed.0
    VersionFound = ''
    Line = strip(ListofUpdateLinesCleansed.i) 
-   parse var line Sequence';'AmigaVersionCheck';'KickstartVersion';'PackageName';'AminetSearch';'Source';'GithubPage';'GithubName';'GithubRelease';'SourceLocation';'FileDownloadName';'FilestoInstall';'DrivetoInstall';'LocationtoInstall';'FilesToDelete';'BackupFolder';'SearchPathType';'SearchPathFile';'NewFileName
+	parse var line AmigaUpdate';'AmigaVersionCheck';'KickstartVersion';'AmigaPackageName';'AminetSearchTerm';'UpdatePackageSearchTerm';'UpdatePackageSearchResultLimit';'UpdatePackageSearchExclusionTerm';'UpdatePackageSearchMinimumDate';'Source';'GithubPage';'GithubName';'GithubRelease';'GithubAppendTagToFileName';'SourceLocation';'FileDownloadName';'FilestoInstall';'ProtectionBits';'DrivetoInstall';'LocationtoInstall';'NewFileName';'FilesToDelete';'BackupFolder';'SearchPathType';'SearchPathFile
+   /* parse var line AmigaUpdate';'AmigaVersionCheck';'KickstartVersion';'PackageName';'AminetSearchTerm';'Source';'GithubPage';'GithubName';'GithubRelease';'SourceLocation';'FileDownloadName';'FilestoInstall';'DrivetoInstall';'LocationtoInstall';'FilesToDelete';'BackupFolder';'SearchPathType';'SearchPathFile';'NewFileName */
    if AmigaVersionCheck ~= 'TRUE' then iterate
-   If PackageName ~= PackageNametoReport then DO
+   If AmigaPackageName ~= PackageNametoReport then DO
       RevisedPath = ''
-      Say 'Processing Package: 'PackageName
+      Say 'Processing Package: 'AmigaPackageName
    end
-   PackageNametoReport = PackageName
-   if POS('EMU68 PISTORM',upper(PackageName)) > 0 then DO
+   PackageNametoReport = AmigaPackageName
+   if POS('EMU68 PISTORM',upper(AmigaPackageName)) > 0 then DO
       If Flag_UpdateEmu68 = "TRUE" then DO
-        If upper(PackageName) = 'EMU68 PISTORM32LITE' & upper(PistormVariant) ~= 'PISTORM32LITE' then DO
+        If upper(AmigaPackageName) = 'EMU68 PISTORM32LITE' & upper(PistormVariant) ~= 'PISTORM32LITE' then DO
            say ''
            iterate
         end
-        If upper(PackageName) = 'EMU68 PISTORM' & upper(PistormVariant) ~= 'PISTORM' then DO
+        If upper(AmigaPackageName) = 'EMU68 PISTORM' & upper(PistormVariant) ~= 'PISTORM' then DO
            say ''
            iterate
            END
@@ -367,7 +334,7 @@ Do i = 1 to ListofUpdateLinesCleansed.0
          iterate
       END
    END
-   if POS('VIDEOCORE',upper(PackageName)) > 0 & Flag_UpdateVideocore = "FALSE"  then do
+   if POS('VIDEOCORE',upper(AmigaPackageName)) > 0 & Flag_UpdateVideocore = "FALSE"  then do
       say 'Cannot update Videocore as either you are not using PiStorm or the version is too recent (1.1)'
       say ''
       iterate
@@ -407,12 +374,12 @@ Do i = 1 to ListofUpdateLinesCleansed.0
    ListofUpdateLinesCleansed.i = ListofUpdateLinesCleansed.i||';'||RevisedPath
    /* Say 'DEBUG - Line Number: 'Sequence' ExistingFilePath: 'ExistingFiletoCheckPath */
    If ~Exists(ExistingFiletoCheckPath) then DO
-      say 'Cannot update "'PackageName'" as not installed (or not installed in expected location)!'
+      say 'Cannot update "'AmigaPackageName'" as not installed (or not installed in expected location)!'
       say ''
       iterate
    END
    VersionFound = GetVersion(ExistingFiletoCheckPath,'FILE')
-   vCmd = 'echo "'FilestoInstall||';'||VersionFound'" >"'VersionDataFolder'/'PackageName'"'
+   vCmd = 'echo "'FilestoInstall||';'||VersionFound'" >"'VersionDataFolder'/'AmigaPackageName'"'
    vCmd       
    DownloadLocation = DownloadFolder"/"FileDownloadName
    Say 'Found 'Filename' version 'VersionFound
@@ -427,7 +394,7 @@ Do i = 1 to ListofUpdateLinesCleansed.0
             Call DownloadFile(Message,SourceLocation,DownloadLocation,3,1)
          END
          When Source="Web - SearchforPackageAminet" then DO
-            AminetDLLocation = GetLatestAminetURL(AminetSearch)
+            AminetDLLocation = GetLatestAminetURL(AminetSearchTerm)
             if AminetDLLocation ~="ERROR" then do
                Message = 'DLing 'FileDownloadName
                Call DownloadFile(Message,AminetDLLocation,DownloadLocation,3,1) 
@@ -437,12 +404,13 @@ Do i = 1 to ListofUpdateLinesCleansed.0
             GithubFilesDownloadURL =''
             GithubPathJSONURL = SourceLocation
             GithubPathURL = GitHubPage
-            JsonDownloadPath = TempFolder||'/'||PackageName||'.json'
-            Call DownloadFile('Looking for release information from Github for '||PackageName,SourceLocation,JsonDownloadPath,3,0)
+            JsonDownloadPath = TempFolder||'/'||AmigaPackageName||'.json'
+            Call DownloadFile('Looking for release information from Github for '||AmigaPackageName,SourceLocation,JsonDownloadPath,3,0)
             TagValue = ProcessJSONFile(JsonDownloadPath)
             if right(GithubName,1)='.' then GithubName = left(GithubName,(length(GithubName)-1))
-            GithubFilesDownloadURL = GitHubPage||'/download/'||TagValue||'/'||GithubName||'.zip'
-            Message = 'DLing 'FileDownloadName
+            If GithubAppendTagToFileName = "TRUE" then GithubFilesDownloadURL = GitHubPage||'/download/'||TagValue||'/'||GithubName||TagValue||'.zip'
+				Else GithubFilesDownloadURL = GitHubPage||'/download/'||TagValue||'/'||GithubName||'.zip'
+      		Message = 'DLing 'FileDownloadName
             Call DownloadFile(Message,GithubFilesDownloadURL,DownloadLocation,3,1) 
          END
          Otherwise nop                        
@@ -482,15 +450,15 @@ PackageNeedsUpdating = ''
 Do i = 1 to ListofUpdateLinesCleansed.0
    PathtoCurrentVersion = ''
    Line = strip(ListofUpdateLinesCleansed.i) 
-   parse var line Sequence';'AmigaVersionCheck';'KickstartVersion';'PackageName';'AminetSearch';'Source';'GithubPage';'GithubName';'GithubRelease';'SourceLocation';'FileDownloadName';'FilestoInstall';'DrivetoInstall';'LocationtoInstall';'FilesToDelete';'BackupFolder';'SearchPathType';'SearchPathFile';'NewFileName';'RevisedPath
-   if PackageName = '' then iterate
-   PathtoCurrentVersion = VersionDataFolder'/'PackageName 
-   If PackageName ~= PackageNametoReport then DO
+	parse var line AmigaUpdate';'AmigaVersionCheck';'KickstartVersion';'AmigaPackageName';'AminetSearchTerm';'UpdatePackageSearchTerm';'UpdatePackageSearchResultLimit';'UpdatePackageSearchExclusionTerm';'UpdatePackageSearchMinimumDate';'Source';'GithubPage';'GithubName';'GithubRelease';'GithubAppendTagToFileName';'SourceLocation';'FileDownloadName';'FilestoInstall';'ProtectionBits';'DrivetoInstall';'LocationtoInstall';'NewFileName';'FilesToDelete';'BackupFolder';'SearchPathType';'SearchPathFile
+   if AmigaPackageName = '' then iterate
+   PathtoCurrentVersion = VersionDataFolder'/'AmigaPackageName 
+   If AmigaPackageName ~= PackageNametoReport then DO
       PathtoFutureVersion = ''
       PackageNeedsUpdating = ''      
       Say ''
       If Exists(PathtoCurrentVersion) then Do
-         Say 'Processing Package: 'PackageName
+         Say 'Processing Package: 'AmigaPackageName
          if READFILE(PathtoCurrentVersion,'FilePathandVersion') then do
             parse Var FilePathandVersion.1 FilePathtoExtractedFile';'CurrentVersion
             If Pos('#?',FilePathtoExtractedFile) > 0 then do
@@ -523,19 +491,19 @@ Do i = 1 to ListofUpdateLinesCleansed.0
                If PackageNeedsUpdating = "FALSE" then say 'Current version is: 'CurrentVersion'. New version is: 'DownloadedFileVersion'. Nothing to do!'
                Else DO
                   say 'Current version is: 'CurrentVersion'. New version is: 'DownloadedFileVersion'. Current installed package is out-of-date.' 
-                  If AskResponse() then say 'Performing update of 'PackageName
+                  If AskResponse() then say 'Performing update of 'AmigaPackageName
                   ELSE DO
-                     say 'Not updating 'PackageName
+                     say 'Not updating 'AmigaPackageName
                      PackageNeedsUpdating = 'FALSE'
                   END
                END
             END
          END
       End
-      Else say 'Not updating 'PackageName
+      Else say 'Not updating 'AmigaPackageName
    end
    /* Say Sequence */
-   PackageNametoReport = PackageName
+   PackageNametoReport = AmigaPackageName
    /* Comment out below line for testing */
    If PackageNeedsUpdating = '' | PackageNeedsUpdating = "FALSE" then iterate
    FilesToInstall = Translate(FilestoInstall,'/','\')
@@ -589,14 +557,14 @@ Do i = 1 to ListofUpdateLinesCleansed.0
 end
 
 /* Stage Three - Perform Updates - Finish */
-
+/*
 Say 'Updates Completed! Deleting Temporary Files'
 vCmd = 'c:delete >NIL: "'TempFolder'" ALL QUIET' 
 If DEBUG = 'TRUE' then say vCmd
 else vCmd
 Say 'This window will close in 3 seconds'
 'wait 3'
-
+*/
 EXIT
 
 /* ================= FUNCTIONS ================= */
@@ -820,7 +788,7 @@ ProcessJsonFile:
    END
    CALL CLOSE(inputfile)
    IF tag_value = "" THEN CALL CloseProgram('Could not find a valid release (draft:false, prerelease:false) in the file.',3,3)
-   ELSE Return tag_value  
+   ELSE Return tag_value	
 CheckUpdateNeeded:
    parse arg OldVersion,NewVersion
   
