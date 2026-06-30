@@ -142,15 +142,14 @@ IF DEBUG = "TRUE" then DO
    SAY "SwitchNoCloseWirelessManager: "SwitchNoCloseWirelessManager
    SAY "SwitchWaitatEnd: "SwitchWaitatEnd
    SAY "SwitchNoShutDownRoadshow "SwitchNoShutDownRoadshow
-	SAY "SwitchKeepEnvStatus "SwitchKeepEnvStatus
-	SAY "SwitchSilentRunning "SwitchSilentRunning 
+   SAY "SwitchKeepEnvStatus "SwitchKeepEnvStatus
+   SAY "SwitchSilentRunning "SwitchSilentRunning 
    SAY "WirelessprefsPath: "WirelessprefsPath
    SAY "WifiPiDevicePath: "WifiPiDevicePath
    SAY "WirelesslogFilePath: "WirelesslogFilePath
    SAY "sntpLog: "sntplog
    SAY "RoadshowParametersFile: "RoadshowParametersFile
 END
-
 
 IF action = "CONNECT" then DO
    If IPStack = "MIAMI" then DO
@@ -171,10 +170,10 @@ IF action = "CONNECT" then DO
       END
    END
    IF device = "WIFIPI.DEVICE" THEN DO
-	   If SwitchSilentRunning = "FALSE" then DO
+      If SwitchSilentRunning = "FALSE" then DO
          SAY ""
          SAY "Connecting to Wifi Network"
-	   END
+      END
       If upper(RPIVersion()) = "UNKNOWN" then DO
          SAY ""
          Say "Wifipi.device only works on Pistorm! Aborting!"
@@ -190,24 +189,24 @@ IF action = "CONNECT" then DO
       END
      
       IF OPEN('f',WirelessprefsPath,'R') then DO
-         Do until EOF('f')
+		   vSSID = ""
+			Do until EOF('f')
+			   If vSSID ~= "" then LEAVE
             LineRead = Upper(STRIP(READLN('f')))
             IF POS('SSID=',LineRead) > 0 THEN DO
                parse var LineRead v1'SSID="'vSSID'"'
-               if vSSID="" then DO
-                  SAY "No SSID found in ""SYS:Prefs/Env-Archive/sys/wireless.prefs""! You need to configure!"
-                  CALL CloseWindowMessage()
-                  EXIT 10
-               END
-               ELSE DO
-                  IF DEBUG="TRUE" then SAY "SSID found was: "vSSID
-                  LEAVE
-               END        
-            END
-         END
-      END      
+		      END
+			END
+		END
+
+      if vSSID="" then DO
+         SAY "No SSID found in ""SYS:Prefs/Env-Archive/sys/wireless.prefs""! You need to configure!"
+         CALL CloseWindowMessage()
+         EXIT 10
+		END
       
-       
+		IF DEBUG="TRUE" then SAY "SSID found was: "vSSID
+			      
       IF SwitchNoReStartWirelessManager = "FALSE" then DO
          If ~KillWirelessManager() then DO
             CALL CloseWindowMessage()
@@ -229,26 +228,26 @@ IF action = "CONNECT" then DO
       END
       IF WirelessManagerActive ~="TRUE" | SwitchNoReStartWirelessManager = "FALSE" then DO
          If SwitchSilentRunning = "FALSE" then DO
-			   SAY ""
+            SAY ""
             SAY "Connecting to Wireless. This may take a few moments......."
             SAY ""
             'setenv InProgressBar Connecting to Wireless'
             'run >T:Progressbar.txt rx S:ProgressBar.rexx'
-			END
+         END
          'Run >NIL: C:wirelessmanager device='WifiPiDevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
          'C:WaitUntilConnected device='WifiPiDevicePath' Unit=0 delay=100'
          If RC = 0 then DO
             If SwitchSilentRunning = "FALSE" then DO 
-				   'setenv InProgressBar COMPLETE'
+               'setenv InProgressBar COMPLETE'
                'delete T:Progressbar.txt >NIL: QUIET'
                'wait 1'
-				END
+            END
          END
          ELSE DO
             If SwitchSilentRunning = "FALSE" then DO 
-				   'setenv InProgressBar ERROR'
+               'setenv InProgressBar ERROR'
                'delete T:Progressbar.txt >NIL: QUIET'
-				END
+            END
             SAY ""
             SAY "Could not connect to Wifi!"
             If ~KillWirelessManager() then DO
@@ -259,11 +258,12 @@ IF action = "CONNECT" then DO
          END
       END
    END
+	
    IF device = "GENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
-		   SAY ""
+         SAY ""
          SAY "Connecting to Ethernet"
-		END
+      END
       If RPIVersion() ~= "RPi4" then DO
          SAY ""
          Say "Genet.device only works on Pistorm with Raspberry Pi4 or CM4! Aborting!"
@@ -275,39 +275,41 @@ IF action = "CONNECT" then DO
          EXIT 10
       END   
    END
+	
    IF device = "UAENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
-		   SAY ""
+         SAY ""
          SAY "Connecting to Network in UAE (uaenet.device)"
-		END
+      END
       if ~IsUAE() THEN DO
          CALL CloseWindowMessage()
          EXIT 10
       END
    END
    IF device = "V2EXPETH.DEVICE" THEN DO
-      If SwitchSilentRunning = "FALSE" then 
-		   SAY ""
+      If SwitchSilentRunning = "FALSE" then DO
+         SAY ""
          SAY "Connecting to Ethernet (v2expeth.device)"
-		END
+      END
       if ~IsV2() THEN DO
          CALL CloseWindowMessage()
          EXIT 10
       END
    END
+
    IF ipstack = "ROADSHOW" THEN DO
       CALL LoadRoadshowParams(DevicebaseName)
       If SwitchSilentRunning = "FALSE" then DO
-		   'setenv InProgressBar Connecting to Network'
+         'setenv InProgressBar Connecting to Network'
          'run >T:Progressbar.txt rx S:ProgressBar.rexx'
-		EMD
+      END
       'AddNetInterface 'DevicebaseName' TIMEOUT=50 >T:AddInterface.txt'
       'Search T:AddInterface.txt "Could not add" >NIL:'
       IF RC = 0 THEN DO
          If SwitchSilentRunning = "FALSE" then DO
-			   'setenv InProgressBar ERROR'
+            'setenv InProgressBar ERROR'
             'delete T:Progressbar.txt >NIL: QUIET'
-			END
+         END
          SAY ""
          SAY "Error connecting to Roadshow"
 
@@ -319,10 +321,10 @@ IF action = "CONNECT" then DO
       END
       ELSE DO
          If SwitchSilentRunning = "FALSE" then DO
-			   'setenv InProgressBar COMPLETE'
+            'setenv InProgressBar COMPLETE'
             'delete T:Progressbar.txt >NIL: QUIET'
             'wait 1'
-			END
+         END
       END
    END
 
@@ -346,7 +348,6 @@ IF action = "CONNECT" then DO
          CALL CloseWindowMessage()
          EXIT 10
       END
-      
       
       IF ~show('p', 'MIAMI.1') then DO
          IF DEBUG="TRUE" then DO
@@ -395,7 +396,7 @@ IF action = "CONNECT" then DO
       ADDRESS COMMAND 
    END
    if SwitchNoSyncTime = "FALSE" then DO
-      SAY "Updating system time"
+      if SwitchSilentRunning = "FALSE" then SAY "Updating system time"
       If ~SyncTime() THEN DO
          CALL CloseWindowMessage()
          EXIT 5
@@ -418,31 +419,29 @@ IF action = "CONNECT" then DO
       END 
       if SwitchSilentRunning = "FALSE" then SAY "Time set and DST applied if applicable"
    END
-	if RIGHT(device, 7) = ".device" then DevicetoReport = LEFT(device, LENGTH(device) - 7) 
-	ELSE DevicetoReport = device
-   'setenv ConnectionType 'DevicetoReport	
-	'setenv IPStack 'ipstack
-   IF ipstack = "ROADSHOW" THEN DO
-      if SwitchSilentRunning = "FALSE" then DO 
-		   SAY ""
-         say "Successfully connected to Network!" 
-         SAY ""
-         'shownetstatus'
-		END
+   if RIGHT(upper(device), 7) = ".DEVICE" then DevicetoReport = LEFT(device, LENGTH(device) - 7) 
+   ELSE DevicetoReport = device
+   'setenv ConnectionType 'DevicetoReport   
+   'setenv IPStack 'ipstack
+   IF ipstack = "ROADSHOW" & SwitchSilentRunning = "FALSE" THEN DO
+      SAY ""
+      say "Successfully connected to Network!" 
+      SAY ""
+     'shownetstatus'
    END
 END
 
 IF action = "DISCONNECT" then DO
   If SwitchKeepEnvStatus="FALSE" then DO
-     'unsetenv ConnectionType'	
-     'usetenv IPStack'
-	END
+     'unsetenv ConnectionType'   
+     'unsetenv IPStack'
+   END
    if SwitchSilentRunning = "FALSE" then DO
-	   SAY ""
+      SAY ""
       Say "Disconnecting Network"
       SAY ""
       SAY "Killing network shares"
-	END
+   END
    CALL KillNetworkShares()
    If ipstack = "ROADSHOW" THEN CALL KillRoadshow()
    IF ipstack = "MIAMI" THEN DO

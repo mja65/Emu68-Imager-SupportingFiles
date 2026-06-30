@@ -11,9 +11,9 @@
 ;
 
 If $IPStack EQ ROADSHOW
-   SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=Roadshow Device=$ConnectionType
+   SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=Roadshow Device=$ConnectionType KeepEnvStatus SilentRunning
 ENDIF
 If $IPStack EQ MIAMI
-   SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=MIAMI Device=$ConnectionType
+   SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=MIAMI Device=$ConnectionType KeepEnvStatus SilentRunning
 ENDIF
 

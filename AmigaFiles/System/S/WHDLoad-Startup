@@ -14,10 +14,10 @@
 c:areweonline
 If $RC EQ 0
    If $IPStack EQ ROADSHOW
-      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=Disconnect IPStack=Roadshow SwitchKeepEnvStatus
+      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=Disconnect IPStack=Roadshow KeepEnvStatus SilentRunning
    ENDIF
 	If $IPStack EQ MIAMI
-      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=Disconnect IPStack=MIAMI SwitchKeepEnvStatus
+      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=Disconnect IPStack=MIAMI KeepEnvStatus SilentRunning
    ENDIF
 ELSE
 	Unsetenv IPStack
