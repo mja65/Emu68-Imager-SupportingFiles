@@ -17,9 +17,11 @@ jobs:
         run: |
           # Runs from the root to capture everything, excluding all top-level and nested hidden files
           zip -r Emu68ImagerSupportingFiles-${{ github.event.release.tag_name }}.zip . -x ".*" "*/.*"
+
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.release.tag_name }} # <-- Explicitly tell it which tag to target
           name: "Emu68 Imager Supporting Files"
           body: "This release contains the supporting files used by Emu68 Imager. There is no need to download this file as Emu68 Imager will automatically do so."
           files: Emu68ImagerSupportingFiles-${{ github.event.release.tag_name }}.zip
