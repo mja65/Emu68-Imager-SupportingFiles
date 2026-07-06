@@ -1,11 +1,11 @@
-/* $VER: Network.rexx 1.0.1 (2026-06-30)                                      */
+/* $VER: NetworkMiami.rexx 1.0.1 (2026-06-30)                                      */
 /* Script to take Amiga online and offline including sync of clock            */
 /*                                                                            */
 
 /******************************************************************************
  *                                                                            *
  * REQUIREMENTS:                                                              *
- * - IP Stack:            Miami or Roadshow                                   *
+ * - IP Stack:            Miami                               *
  * - Devices:             genet.device or wifipi.device or                    *
  *                        uaenet.device(for UAE, built-in)                    *
  *                        or v2expeth.device (Apollo V2)                      *
@@ -25,9 +25,7 @@ PARSE ARG input
 input = upper(TRANSLATE(input, ' ', '='))
 PARSE VAR input . 'ACTION' action .
 PARSE VAR input . 'DEVICE' device .
-PARSE VAR input . 'IPSTACK' ipstack .
 
-ipstack = STRIP(ipstack)
 device  = STRIP(device)
 action  = STRIP(action)
 
@@ -37,7 +35,6 @@ IF POS('WAITATEND', input) > 0 THEN SwitchWaitatEnd = "TRUE"
 SwitchSilentRunning = "FALSE"
 IF POS('SILENTRUNNING', input) > 0 THEN SwitchSilentRunning = "TRUE"
 
-IF action = "" | ipstack = "" THEN SIGNAL ShowUsage
 IF action = "CONNECT" & device = "" THEN SIGNAL ShowUsage
 
 IF FIND("CONNECT DISCONNECT",action) = 0 THEN DO
@@ -53,27 +50,16 @@ If SwitchSilentRunning = "FALSE" then DO
    SAY "**********************************************"
 END
 
-/* Check IPStack */
-IF action = "CONNECT" then DO
-   IF FIND("ROADSHOW MIAMI",ipstack) = 0 THEN DO
-      SAY "Error: Invalid IPSTACK '"ipstack"'. Must be Roadshow or Miami."
-      CALL CloseWindowMessage()
-      EXIT 10
-   END
-END
-
 SwitchKeepEnvStatus = "FALSE"
 SwitchNoCloseWirelessManager = "FALSE"
 SwitchNoSyncTime = "FALSE"
 SwitchNoCloseMiami = "FALSE"
 SwitchNoReStartMiami = "FALSE"
-SwitchNoShutDownRoadshow = "FALSE"
 
 IF POS('NOCLOSEWIRELESSMANAGER', input) > 0 THEN SwitchNoCloseWirelessManager = "TRUE"
 IF POS('NOSYNCTIME', input) > 0 THEN SwitchNoSyncTime = "TRUE"
 IF POS('NOCLOSEMIAMI', input) > 0 THEN SwitchNoCloseMiami = "TRUE"
 IF POS('NORESTARTMIAMI', input) > 0 THEN SwitchNoReStartMiami = "TRUE"
-IF POS('NOSHUTDOWNROADSHOW', input) > 0 THEN SwitchNoShutDownRoadshow = "TRUE"
 IF POS('KEEPENVSTATUS', input) > 0 THEN SwitchKeepEnvStatus = "TRUE"
 
 IF device ~= "" & ~POS(".", device) > 0 THEN device = device || ".DEVICE"
@@ -96,11 +82,9 @@ WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 WifiPiDevicePath   = "Sys:Devs/Networks/wifipi.device"
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
 sntpLog = "RAM:sntplog.txt"
-RoadshowParametersFile = "Sys:Pistorm/RoadshowParameters"
 
 IF DEBUG = "TRUE" then DO
    SAY "Debug mode on"
-   SAY "IPStack: "ipstack
    SAY "Action: "action
    SAY "Device: "device
    SAY "DevicebaseName: "DevicebaseName
@@ -109,14 +93,12 @@ IF DEBUG = "TRUE" then DO
    SAY "SwitchNoSyncTime: "SwitchNoSyncTime 
    SAY "SwitchNoCloseWirelessManager: "SwitchNoCloseWirelessManager
    SAY "SwitchWaitatEnd: "SwitchWaitatEnd
-   SAY "SwitchNoShutDownRoadshow "SwitchNoShutDownRoadshow
    SAY "SwitchKeepEnvStatus "SwitchKeepEnvStatus
    SAY "SwitchSilentRunning "SwitchSilentRunning 
    SAY "WirelessprefsPath: "WirelessprefsPath
    SAY "WifiPiDevicePath: "WifiPiDevicePath
    SAY "WirelesslogFilePath: "WirelesslogFilePath
    SAY "sntpLog: "sntplog
-   SAY "RoadshowParametersFile: "RoadshowParametersFile
 END
 
 IF action = "CONNECT" then DO
@@ -235,104 +217,64 @@ IF action = "CONNECT" then DO
       END
    END
 
-   IF ipstack = "ROADSHOW" THEN DO
-      CALL LoadRoadshowParams(DevicebaseName)
-      If SwitchSilentRunning = "FALSE" then DO
-         'setenv InProgressBar Connecting to Network'
-         'run >T:Progressbar.txt rx S:ProgressBar.rexx'
-      END
-      'AddNetInterface 'DevicebaseName' TIMEOUT=50 >T:AddInterface.txt'
-      'Search T:AddInterface.txt "Could not add" >NIL:'
-      IF RC = 0 THEN DO
-         If SwitchSilentRunning = "FALSE" then DO
-            'setenv InProgressBar ERROR'
-            'delete T:Progressbar.txt >NIL: QUIET'
-         END
-         SAY ""
-         SAY "Error connecting to Roadshow"
-
-         If ~KillWirelessManager() then DO
-            CALL CloseWindowMessage()
-            EXIT 10
-         END         
-         EXIT 10
-      END
-      ELSE DO
-         If SwitchSilentRunning = "FALSE" then DO
-            'setenv InProgressBar COMPLETE'
-            'delete T:Progressbar.txt >NIL: QUIET'
-            'wait 1'
-         END
-      END
-   END
-
-   IF ipstack = "MIAMI" THEN DO
-      MiamiConfigFile = "Miami:" || DevicebaseName || ".default"
-      IF ~EXISTS(MiamiConfigFile) THEN DO
-         SAY ""
-         SAY "Configuration file" MiamiConfigFile "does not exist!"
-         If ~KillWirelessManager() then DO
-            CALL CloseWindowMessage()
-            EXIT 10
-         END
-         CALL CloseWindowMessage()         
-         EXIT 10
-      END   
-      IF ~IsMiamiInstalled() THEN DO
-         If ~KillWirelessManager() then DO
-            CALL CloseWindowMessage()
-            EXIT 10
-         END
+   MiamiConfigFile = "Miami:" || DevicebaseName || ".default"
+   IF ~EXISTS(MiamiConfigFile) THEN DO
+      SAY ""
+      SAY "Configuration file" MiamiConfigFile "does not exist!"
+      If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
          EXIT 10
       END
-      
-      IF ~show('p', 'MIAMI.1') then DO
-         IF DEBUG="TRUE" then DO
-            SAY ""
-            SAY "Miami not running"
-         END
+      CALL CloseWindowMessage()         
+      EXIT 10
+   END   
+   
+   IF ~show('p', 'MIAMI.1') then DO
+      IF DEBUG="TRUE" then DO
+         SAY ""
+         SAY "Miami not running"
+      END
+      'run <>nil: Miami:miamidx 'MiamiConfigFile
+   END
+   ELSE DO
+      IF SwitchNoRestartMiami="FALSE" then DO   
+         SAY ""
+         Say "Miami already running.Quitting."
+         ADDRESS 'MIAMI.1'
+         QUIT
+         ADDRESS COMMAND
+         'wait sec=2'
          'run <>nil: Miami:miamidx 'MiamiConfigFile
       END
       ELSE DO
-         IF SwitchNoRestartMiami="FALSE" then DO   
-            SAY ""
-            Say "Miami already running.Quitting."
-            ADDRESS 'MIAMI.1'
-            QUIT
-            ADDRESS COMMAND
-            'wait sec=2'
-            'run <>nil: Miami:miamidx 'MiamiConfigFile
-         END
-         ELSE DO
-            ADDRESS 'MIAMI.1'
-            LOADSETTINGS MiamiConfigFile
-         END
+         ADDRESS 'MIAMI.1'
+         LOADSETTINGS MiamiConfigFile
       END
-         
-      'WaitForPort MIAMI.1'
-      ADDRESS 'MIAMI.1'
-
-      DO i=1 to 3
-         'Online'
-         'ISONLINE'
-         if RC=0 & SwitchSilentRunning = "FALSE" then Say "Attempt number "i "to go online failed"
-         ELSE LEAVE
-      END
-      
-      if RC=1 then hide
-      ELSE DO
-         SAY "" 
-         Say "All attempts to go online failed!"
-         If ~KillWirelessManager() then DO
-            CALL CloseWindowMessage()
-            EXIT 10
-         END
-         CALL CloseWindowMessage()
-         exit 10
-      END
-      ADDRESS COMMAND 
    END
+         
+   'WaitForPort MIAMI.1'
+   ADDRESS 'MIAMI.1'
+
+   DO i=1 to 3
+      'Online'
+      'ISONLINE'
+      if RC=0 & SwitchSilentRunning = "FALSE" then Say "Attempt number "i "to go online failed"
+      ELSE LEAVE
+   END
+      
+   if RC=1 then hide
+   ELSE DO
+      SAY "" 
+      Say "All attempts to go online failed!"
+      If ~KillWirelessManager() then DO
+         CALL CloseWindowMessage()
+         EXIT 10
+      END
+      CALL CloseWindowMessage()
+      exit 10
+   END
+   ADDRESS COMMAND 
+
    if SwitchNoSyncTime = "FALSE" then DO
       if SwitchSilentRunning = "FALSE" then SAY "Updating system time"
       If ~SyncTime() THEN DO
@@ -362,19 +304,11 @@ IF action = "CONNECT" then DO
    if RIGHT(upper(device), 7) = ".DEVICE" then DevicetoReport = LEFT(device, LENGTH(device) - 7) 
    ELSE DevicetoReport = device
    'setenv ConnectionType 'DevicetoReport   
-   'setenv IPStack 'ipstack
-   IF ipstack = "ROADSHOW" & SwitchSilentRunning = "FALSE" THEN DO
-      SAY ""
-      say "Successfully connected to Network!" 
-      SAY ""
-     'shownetstatus'
-   END
 END
 
 IF action = "DISCONNECT" then DO
   If SwitchKeepEnvStatus="FALSE" then DO
      'unsetenv ConnectionType'   
-     'unsetenv IPStack'
    END
    if SwitchSilentRunning = "FALSE" then DO
       SAY ""
@@ -383,45 +317,44 @@ IF action = "DISCONNECT" then DO
       SAY "Killing network shares"
    END
    CALL KillNetworkShares()
-   If ipstack = "ROADSHOW" THEN CALL KillRoadshow()
-   IF ipstack = "MIAMI" THEN DO
-      IF ~SHOW('P', 'MIAMI.1') THEN DO
+
+   IF ~SHOW('P', 'MIAMI.1') THEN DO
+      SAY ""
+      SAY "Miami is already closed and offline!"
+   END
+   ELSE DO
+      ADDRESS 'MIAMI.1'
+      'ISONLINE'
+      IF RC = 0 THEN DO
+         ADDRESS COMMAND
          SAY ""
-         SAY "Miami is already closed and offline!"
+         SAY "Miami is already offline!"
       END
       ELSE DO
-         ADDRESS 'MIAMI.1'
+         'OFFLINE'
          'ISONLINE'
-         IF RC = 0 THEN DO
+         IF RC = 1 THEN DO
             ADDRESS COMMAND
             SAY ""
-            SAY "Miami is already offline!"
+            SAY "Couldn't get Miami offline!"
          END
          ELSE DO
-            'OFFLINE'
-            'ISONLINE'
-            IF RC = 1 THEN DO
-               ADDRESS COMMAND
+            If DEBUG = "TRUE" then DO
                SAY ""
-               SAY "Couldn't get Miami offline!"
+               SAY "Miami is now offline"
             END
-            ELSE DO
+            If SwitchNoCloseMiami = "FALSE" then DO                  
+               CALL KillMiami()
                If DEBUG = "TRUE" then DO
                   SAY ""
-                  SAY "Miami is now offline"
+                  SAY "Miami is now closed"
                END
-               If SwitchNoCloseMiami = "FALSE" then DO                  
-                  CALL KillMiami()
-                  If DEBUG = "TRUE" then DO
-                     SAY ""
-                     SAY "Miami is now closed"
-                  END
-               END
-               ADDRESS COMMAND               
             END
+            ADDRESS COMMAND               
          END
       END
    END
+
    IF SwitchNoCloseWirelessManager = "FALSE" THEN DO
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
@@ -474,9 +407,6 @@ IsUAE:
       If debug = "TRUE" THEN SAY "UAE detected"
       RETURN 1
    END
-KillRoadshow:
-   'c:Netshutdown >NIL:'
-   Return
 KillMiami:
    IF SHOW('P', 'MIAMI.1') THEN DO
       ADDRESS 'MIAMI.1'
@@ -531,24 +461,6 @@ RpiVersion:
    'version brcm-sdhc.device >NIL:'
    if RC=0 then RETURN 'RPi3'
    Return "Unknown"
-LoadRoadshowParams:
-   PARSE ARG targetDevice
-   if ~READFILE(RoadshowParametersFile,ReadLines) then RETURN
-   do i=1 to Readlines.0
-   IF Readlines.i = "" | LEFT(Readlines.i, 1) = ";" THEN iterate
-     parse var Readlines.i vType';'vParameter';'vValue
-     if upper(vType) ~= targetDevice then iterate
-     SELECT
-        WHEN upper(vParameter) = "TCPRECEIVE" THEN vCmd = 'roadshowcontrol tcp.recvspace='vValue' >NIL:'
-        WHEN upper(vParameter)= "UDPRECEIVE" THEN vCmd = 'roadshowcontrol udp.recvspace='vValue' >NIL:'
-        WHEN upper(vParameter) = "TCPSEND" THEN vCmd = 'roadshowcontrol tcp.sendspace='vValue' >NIL:'
-        WHEN upper(vParameter) = "UDPSEND" THEN vCmd = 'roadshowcontrol udp.sendspace='vValue' >NIL:'
-        OTHERWISE nop
-     end
-     if DEBUG="TRUE" then SAY vCmd
-     vCmd
-   end
-   RETURN
 CloseWindowMessage:
    If SwitchWaitatEnd="TRUE" then DO
       SAY ""
@@ -561,22 +473,21 @@ CloseWindowMessage:
 
 ShowUsage:
    SAY ""
-   SAY "Arexx program to connect to network using via Miami or Roadshow and to synchronise time"
+   SAY "Arexx program to connect to network using Miami and to synchronise time"
    SAY ""
-   SAY "Usage: Rx Network.rexx ACTION=<Action Type> DEVICE=<Selected Device> IPSTACK=<IP Stack> <Options>"
+   SAY "Usage: Rx Network.rexx ACTION=<Action Type> DEVICE=<Selected Device> <Options>"
    SAY "<Action Type>: Connect, Disconnect"
    SAY "<Selected Device>: WifiPi, Genet, Uaenet, V2expeth (applicable for Connect action type)"
-   SAY "<IP Stack>: Miami, Roadshow"
    SAY "<Options>: NoSyncTime, NoRestartMiami, NoRestartWirelessManager, NoShutdownRoadshow (applicable for connect action type)"
    SAY "<Options>: NoCloseWirelessManager, NoCloseMiami (applicable for disconnect action type)"
    SAY "<Options>: Debug, WaitatEnd"
    SAY ""
-   SAY "Example Usage: "
-   SAY "Connect to wifipi.device using MiamiDX"
-   SAY "Rx Network.rexx ACTION=Connect DEVICE=wifipi IPSTACK=Miami"
+   SAY "Example Usage:"
+   SAY "Connect to wifipi.device"
+   SAY "Rx Network.rexx ACTION=Connect DEVICE=wifipi"
    SAY ""
-   SAY "Disconnect from network running via Miami"
-   SAY "Rx Network.rexx ACTION=Disconnect IPSTACK=Miami" 
+   SAY "Disconnect from network"
+   SAY "Rx Network.rexx ACTION=Disconnect" 
    SAY ""
    CALL CloseWindowMessage()
    EXIT 10
