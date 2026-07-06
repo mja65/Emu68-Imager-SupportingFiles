@@ -557,14 +557,12 @@ Do i = 1 to ListofUpdateLinesCleansed.0
 end
 
 /* Stage Three - Perform Updates - Finish */
-/*
 Say 'Updates Completed! Deleting Temporary Files'
 vCmd = 'c:delete >NIL: "'TempFolder'" ALL QUIET' 
 If DEBUG = 'TRUE' then say vCmd
 else vCmd
 Say 'This window will close in 3 seconds'
 'wait 3'
-*/
 EXIT
 
 /* ================= FUNCTIONS ================= */
