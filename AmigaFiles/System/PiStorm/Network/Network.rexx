@@ -1,4 +1,4 @@
-/* $VER: Network.rexx 1.0.1 (2026-06-30)                                        */
+/* $VER: Network.rexx 1.0.1 (2026-06-30)                                      */
 /* Script to take Amiga online and offline including sync of clock            */
 /*                                                                            */
 
@@ -62,39 +62,21 @@ IF action = "CONNECT" then DO
    END
 END
 
-If ipstack = "ROADSHOW" then DO
-   ADDRESS COMMAND
-   If SwitchSilentRunning = "FALSE" then say ""
-   'roadshowcontrol >NIL:'
-   IF RC = 20 then DO
-      SAY ""
-      SAY "Unable to access bsdsocket.library!"
-      SAY "You may be running the demo version of Roadshow after the 15 minute"
-      SAY "expiry. You will need to reboot your Amiga"
-      CALL CloseWindowMessage()
-      EXIT 10
-   END
-END
-
 SwitchKeepEnvStatus = "FALSE"
 SwitchNoCloseWirelessManager = "FALSE"
 SwitchNoSyncTime = "FALSE"
 SwitchNoCloseMiami = "FALSE"
 SwitchNoReStartMiami = "FALSE"
-SwitchNoReStartWirelessManager = "FALSE"
 SwitchNoShutDownRoadshow = "FALSE"
 
 IF POS('NOCLOSEWIRELESSMANAGER', input) > 0 THEN SwitchNoCloseWirelessManager = "TRUE"
 IF POS('NOSYNCTIME', input) > 0 THEN SwitchNoSyncTime = "TRUE"
 IF POS('NOCLOSEMIAMI', input) > 0 THEN SwitchNoCloseMiami = "TRUE"
 IF POS('NORESTARTMIAMI', input) > 0 THEN SwitchNoReStartMiami = "TRUE"
-IF POS('NORESTARTWIRELESSMANAGER', input) > 0 THEN SwitchNoReStartWirelessManager = "TRUE"
 IF POS('NOSHUTDOWNROADSHOW', input) > 0 THEN SwitchNoShutDownRoadshow = "TRUE"
 IF POS('KEEPENVSTATUS', input) > 0 THEN SwitchKeepEnvStatus = "TRUE"
 
-
 IF device ~= "" & ~POS(".", device) > 0 THEN device = device || ".DEVICE"
-
 
 IF action = "CONNECT" then DO
    DevicebaseName = left(device,(LENGTH(device) - 7))
@@ -110,19 +92,6 @@ IF POS('DEBUG', input) > 0 THEN DEBUG = "TRUE"
 
 ADDRESS COMMAND
 
-If IPStack = "ROADSHOW" then DO
-   IF ~IsRoadshowInstalled() THEN DO
-       CALL CloseWindowMessage()
-      EXIT 10
-   END
-END
-If IPStack = "MIAMI" then DO
-   IF ~IsMiamiInstalled() THEN DO
-      CALL CloseWindowMessage()
-      EXIT 10
-   END
-END
-
 WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 WifiPiDevicePath   = "Sys:Devs/Networks/wifipi.device"
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
@@ -136,7 +105,6 @@ IF DEBUG = "TRUE" then DO
    SAY "Device: "device
    SAY "DevicebaseName: "DevicebaseName
    SAY "SwitchNoRestartMiami: "SwitchNoRestartMiami 
-   SAY "SwitchNoReStartWirelessManager: "SwitchNoReStartWirelessManager
    SAY "SwitchNoCloseMiami: "SwitchNoCloseMiami 
    SAY "SwitchNoSyncTime: "SwitchNoSyncTime 
    SAY "SwitchNoCloseWirelessManager: "SwitchNoCloseWirelessManager
@@ -152,23 +120,14 @@ IF DEBUG = "TRUE" then DO
 END
 
 IF action = "CONNECT" then DO
-   If IPStack = "MIAMI" then DO
-      CALL KillNetworkShares()
-      CALL KillMiami()
+   'areweonline'
+   If RC = 0 then DO 
+	   SAY ""
+		SAY "You are already online! Disconnect first."
+		CALL CloseWindowMessage()
+      EXIT 10
    END
-   If IPStack = "ROADSHOW" then DO  
-      IF SwitchNoShutDownRoadshow = "FALSE" then DO 
-         CALL KillNetworkShares()
-         CALL KillRoadshow()
-      END
-      ELSE DO
-         'areweonline'
-         If RC = 0 then DO
-            CALL KillNetworkShares()
-            CALL KillRoadshow()
-         END
-      END
-   END
+   
    IF device = "WIFIPI.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO
          SAY ""
@@ -187,7 +146,6 @@ IF action = "CONNECT" then DO
          CALL CloseWindowMessage()
          EXIT 10
       END
-     
       IF OPEN('f',WirelessprefsPath,'R') then DO
 		   vSSID = ""
 			Do until EOF('f')
@@ -198,64 +156,44 @@ IF action = "CONNECT" then DO
 		      END
 			END
 		END
-
       if vSSID="" then DO
          SAY "No SSID found in ""SYS:Prefs/Env-Archive/sys/wireless.prefs""! You need to configure!"
          CALL CloseWindowMessage()
          EXIT 10
 		END
-      
-		IF DEBUG="TRUE" then SAY "SSID found was: "vSSID
-			      
-      IF SwitchNoReStartWirelessManager = "FALSE" then DO
+		IF DEBUG="TRUE" then SAY "SSID found was: "vSSID   
+      If ~KillWirelessManager() then DO
+         CALL CloseWindowMessage()
+         EXIT 10
+      END  
+      If SwitchSilentRunning = "FALSE" then DO
+         SAY ""
+         SAY "Connecting to Wireless. This may take a few moments......."
+         SAY ""
+         'setenv InProgressBar Connecting to Wireless'
+         'run >T:Progressbar.txt rx S:ProgressBar.rexx'
+      END
+      'Run >NIL: C:wirelessmanager device='WifiPiDevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
+      'C:WaitUntilConnected device='WifiPiDevicePath' Unit=0 delay=100'
+      If RC = 0 then DO
+         If SwitchSilentRunning = "FALSE" then DO 
+            'setenv InProgressBar COMPLETE'
+            'delete T:Progressbar.txt >NIL: QUIET'
+            'wait 1'
+         END
+      END
+      ELSE DO
+         If SwitchSilentRunning = "FALSE" then DO 
+            'setenv InProgressBar ERROR'
+            'delete T:Progressbar.txt >NIL: QUIET'
+         END
+         SAY ""
+         SAY "Could not connect to Wifi!"
          If ~KillWirelessManager() then DO
             CALL CloseWindowMessage()
             EXIT 10
-         END      
-      END
-      ELSE DO
-        'Status COM=c:wirelessmanager >T:WirelessManagerStatus'
-         IF EXISTS('T:WirelessManagerStatus') THEN DO
-            IF OPEN('f','T:WirelessManagerStatus','R') then DO
-               IF ~EOF('f') then DO
-                  WirelessManagerPID = STRIP(READLN('f'))
-                  CALL CLOSE ('f')
-                  WirelessManagerActive = "FALSE"
-                  IF DATATYPE(WirelessManagerPID,'W') then WirelessManagerActive = "TRUE"
-               END
-            END
-         END
-      END
-      IF WirelessManagerActive ~="TRUE" | SwitchNoReStartWirelessManager = "FALSE" then DO
-         If SwitchSilentRunning = "FALSE" then DO
-            SAY ""
-            SAY "Connecting to Wireless. This may take a few moments......."
-            SAY ""
-            'setenv InProgressBar Connecting to Wireless'
-            'run >T:Progressbar.txt rx S:ProgressBar.rexx'
-         END
-         'Run >NIL: C:wirelessmanager device='WifiPiDevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
-         'C:WaitUntilConnected device='WifiPiDevicePath' Unit=0 delay=100'
-         If RC = 0 then DO
-            If SwitchSilentRunning = "FALSE" then DO 
-               'setenv InProgressBar COMPLETE'
-               'delete T:Progressbar.txt >NIL: QUIET'
-               'wait 1'
-            END
-         END
-         ELSE DO
-            If SwitchSilentRunning = "FALSE" then DO 
-               'setenv InProgressBar ERROR'
-               'delete T:Progressbar.txt >NIL: QUIET'
-            END
-            SAY ""
-            SAY "Could not connect to Wifi!"
-            If ~KillWirelessManager() then DO
-               CALL CloseWindowMessage()
-               EXIT 10
-            END         
-            EXIT 10
-         END
+         END         
+         EXIT 10
       END
    END
 	
@@ -484,7 +422,7 @@ IF action = "DISCONNECT" then DO
          END
       END
    END
-   IF device = "WIFIPI.DEVICE" & SwitchNoCloseWirelessManager = "FALSE" THEN DO
+   IF SwitchNoCloseWirelessManager = "FALSE" THEN DO
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
          EXIT 10
@@ -508,21 +446,6 @@ SyncTime:
     RETURN 0
  END
  ELSE RETURN 1
-IsMiamiInstalled:
-   'assign exists Miami: >NIL:'
-   IF RC >= 5 then DO
-      SAY "Miami not installed!"
-      RETURN 0
-   END
-   ELSE DO
-      IF EXISTS('Libs:bsdsocket.library') THEN DO
-         SAY ""
-         Say "Miami installed but existing bsdsocket.library!"
-         CALL CloseWindowMessage()
-         EXIT 10
-      END
-      RETURN 1
-   END
 IsV2:
    'apollocontrol de'
    If RC >0 THEN DO
@@ -550,17 +473,6 @@ IsUAE:
    ELSE DO
       If debug = "TRUE" THEN SAY "UAE detected"
       RETURN 1
-   END
-IsRoadshowInstalled:
-   IF EXISTS('Libs:bsdsocket.library') THEN DO
-      IF DEBUG ="TRUE" then SAY "Roadshow installed"
-      RETURN 1
-   END
-   ELSE DO
-      IF DEBUG ="TRUE" then DO
-         SAY "Roadshow not installed"
-      END
-      RETURN 0
    END
 KillRoadshow:
    'c:Netshutdown >NIL:'
@@ -591,40 +503,22 @@ KillNetworkShares:
    'delete T:NetworkShares.txt QUIET >NIL:'
    RETURN   
 KillWirelessManager:
-   'Status COM=c:wirelessmanager >T:WirelessManagerStatus'
-   IF EXISTS('T:WirelessManagerStatus') THEN DO
-      IF OPEN('f','T:WirelessManagerStatus','R') then DO
-         IF ~EOF('f') then DO
-            WirelessManagerPID = STRIP(READLN('f'))
-            CALL CLOSE ('f')
-            IF DATATYPE(WirelessManagerPID,'W') then DO
-               SAY ""
-               Say "Quitting Wireless Manager"
-               'break' WirelessManagerPID
-               'wait sec=2'
-            END
-            ELSE DO
-               IF DEBUG="TRUE" then DO
-                  SAY ""
-                  SAY "Wireless Manager not already running"
-               END
-            END
-         END
-         ELSE DO
-            IF DEBUG="TRUE" then DO
-               SAY ""
-               SAY "Wireless Manager not already running"
-            END
-         END
+   'Status COM=c:wirelessmanager >ENV:WirelessManagerPID'
+   ProcessNumber = GETENV(WirelessManagerPID)
+   IF ProcessNumber ~= "" THEN DO
+      IF SwitchSilentRunning = "FALSE" then DO
+         SAY ""
+         Say "Quitting Wireless Manager"
       END
-      'Delete T:WirelessManagerStatus >NIL: QUIET'
-      RETURN 1
-   END
-   ELSE DO
+      'break 'ProcessNumber
+   END 
+   ELSE IF DEBUG="TRUE" then DO
       SAY ""
-      SAY "Error running check of WirelessManager!"
-      RETURN 0
-   END
+      SAY "Wireless Manager not already running"   
+  END
+
+  UNSETENV(WirelessManagerPID)
+  RETURN 1
 
 RpiVersion:
    RpiType = GETENV(rpitype)
@@ -681,6 +575,5 @@ ShowUsage:
    SAY "Disconnect from network running via Miami"
    SAY "Rx Network.rexx ACTION=Disconnect IPSTACK=Miami" 
    SAY ""
-   
    CALL CloseWindowMessage()
    EXIT 10
