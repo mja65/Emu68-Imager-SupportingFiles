@@ -4,9 +4,15 @@
 ; $VER: WHDLoad-Cleanup 1.0 (26.06.26)    
 ;
 
-IF EXISTS ENV:IPStack
+If $IPStack EQ Miami
    IF EXISTS ENV:ConnectionType
-      SYS:Rexxc/rx SYS:pistorm/network/network.rexx Action=connect IPStack=$IPStack Device=$ConnectionType KeepEnvStatus SilentRunning
-	ENDIF
+      SYS:Rexxc/rx SYS:PiStorm/Network/NetworkMiami.rexx Action=connect Device=$ConnectionType KeepEnvStatus SilentRunning
+   ENDIF
+ENDIF
+
+If $IPStack EQ Roadshow
+   IF EXISTS ENV:ConnectionType
+      SYS:Rexxc/rx SYS:PiStorm/Network/NetworkRoadshow.rexx Action=connect Device=$ConnectionType KeepEnvStatus SilentRunning
+   ENDIF
 ENDIF
 
