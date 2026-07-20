@@ -11,9 +11,10 @@ You may include, bundle, or distribute this software (including any binary compo
 provided without source files) inside or alongside another software project, package, 
 or distribution, SUBJECT TO THE FOLLOWING CONDITIONS:
 
-    A. ATTRIBUTION: You must visibly credit the author(s) and provide a direct 
-       hyperlink to the source repository for Emu68 Imager (https://github.com/mja65/Emu68-Imager-Software) in your project's 
-       documentation, README, or user interface.
+    A. ATTRIBUTION: You must visibly credit the author(s) as outlined in the README of this 
+       repository and provide a direct hyperlink to the source repository for Emu68 Imager 
+       (https://github.com/mja65/Emu68-Imager-Software) in your project's documentation, 
+       README, or user interface.
     
     B. NON-COMMERCIAL & NO DONATIONS: The project or distribution including this 
        software must be distributed completely free of charge. You may NOT charge 
