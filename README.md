@@ -11,6 +11,6 @@ This repository stores the tools and scripts used by Emu68 Imager as follows. Th
 |Emu68-Updater|Shaytan and SupremeTurnip|
 |SMB Config|Shaytan|
 |Wifi Config|Shaytan|
-|Network.rexx|
-|NetworkMiami.rexx|
-|NetworkRoadhsow.rexx|
+|Network.rexx|SupremeTurnip|
+|NetworkMiami.rexx|SupremeTurnip|
+|NetworkRoadhsow.rexx|SupremeTurnip|
