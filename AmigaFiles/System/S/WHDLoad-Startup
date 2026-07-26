@@ -9,6 +9,9 @@ If $RC EQ 0
    IF $IPStack EQ Roadshow
 	   SYS:Rexxc/rx SYS:PiStorm/Network/NetworkRoadshow.rexx Action=Disconnect KeepEnvStatus SilentRunning
 	ENDIF
+   IF $IPStack EQ AmiTCPNG
+	   SYS:Rexxc/rx SYS:PiStorm/Network/NetworkAmiTCPNG.rexx Action=Disconnect KeepEnvStatus SilentRunning
+	ENDIF	
 	IF $IPStack EQ Miami
 	   SYS:Rexxc/rx SYS:PiStorm/network/NetworkMiami.rexx Action=Disconnect KeepEnvStatus SilentRunning
    ENDIF

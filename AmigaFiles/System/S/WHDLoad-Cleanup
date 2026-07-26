@@ -16,3 +16,8 @@ If $IPStack EQ Roadshow
    ENDIF
 ENDIF
 
+If $IPStack EQ AmiTCPNG
+   IF EXISTS ENV:ConnectionType
+      SYS:Rexxc/rx SYS:PiStorm/Network/NetworkAmiTCPNG.rexx Action=connect Device=$ConnectionType KeepEnvStatus SilentRunning
+   ENDIF
+ENDIF
