@@ -1,57 +1,42 @@
-# $VER: wifipi 1.0 (17.07.2026)
-#
-# The device name is mandatory
-device=wifipi.device
-
-# If not provided, unit number 0 will be used. You may
-# have to change this if there are multiple cards of the
-# same type installed in your machine, or if your network
-# hardware supports several independent connections
-#unit=0
-
-# You must either pick a fixed (static) IPv4 address and
-# a corresponding subnet mask, or request DHCP (dynamic)
-# network address configuration.
-# You can combine address/netmask/dhcp, which has the effect
-# of asking the DHCP server to assign the requested IPv4
-# address and subnet mask to this interface, if possible.
-#address=192.168.0.1
-#netmask=255.255.255.0
-configure=dhcp
-
-# If no DHCP server is present in your network, you can
-# use automatic interface IPv4 address assignment through
-# the ZeroConf protocol. Note that this will not set up
-# default route and DNS servers for you, only the interface
-# address is configured.
-#configure=auto
-
-# This variant of automatic IPv4 address assignment should
-# be used in a wireless network instead of 'configure=auto'
-#configure=fastauto
-
-# You can enable diagnostic messages which can be helpful in
-# tracking down configuration errors.
-#debug=yes
-
-# You can choose how much memory will be used when handling
-# incoming and outgoing network traffic for this device.
-# The default is to reserve 32 buffers of 1500 byte each, both
-# inbound and outbound traffic. Larger values may provide
-# better performance.
-#iprequests=32
-#writerequests=32
-
-# For diagnostic and monitoring purposes it can be helpful to
-# capture network traffic that flows through this interface.
-# To enable this option, select one of filter=local,
-# filter=ipandarp or filter=everything
-#filter=local
-#filter=ipandarp
-#filter=everything
-
-# This option disables a workaround required for the Ariadne
-# network hardware, which, if enabled, would otherwise cause
-# the interface setup procedure to take longer than really
-# necessary.
-requiresinitdelay=no
+; DEVS:NetInterfaces/wifipi -- written by the AmiNetXDuo installer.
+;
+; The name of this file is the name of the interface.  Use it
+; with the network commands:
+;
+;     Online eth0
+;     Offline eth0
+;     ShowNetStatus INTERFACE eth0
+;
+; DEVICE     the SANA-II driver for the card.  A bare name is
+;            looked up in DEVS:.  A path is used as given.
+; UNIT       which card, when one driver has several.
+; CONFIGURE  how the address is obtained:
+;              DHCP   -- ask the network (the usual choice)
+;              AUTO   -- self-assign 169.254.x.x with no DHCP
+;              STATIC -- use the ADDRESS/NETMASK below
+;              NONE   -- no IPv4 here, IPv6 carries this
+;                        interface
+;            Note this keyword is CONFIGURE, not IPTYPE.  In
+;            Roadshow IPTYPE is the SANA-II packet type, a
+;            number, and defaults to 2048.
+;
+; MDNS=  YES -- answer .local queries on this interface
+;        NO  -- do not, which is the default when the
+;               keyword is absent.  The responder costs
+;               real time on a slow machine, even when
+;               nothing asks it anything.
+;
+; An IPv6 build also understands CONFIGURE6 (OFF, LINKLOCAL,
+; AUTO, DHCP or STATIC), ADDRESS6 and GATEWAY6.  A build
+; without IPv6 ignores them, so they are safe to leave in
+; place.  AUTO follows the router, which is what an IPv6-only
+; machine behind a managed router needs; see
+; Examples/NetInterfaces/eth0-ipv6.
+;
+DEVICE=DEVS:Networks/wifipi.device
+UNIT=0
+CONFIGURE=DHCP
+MDNS=YES
+;ADDRESS=192.168.1.10
+;NETMASK=255.255.255.0
+;CONFIGURE6=AUTO
