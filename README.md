@@ -5,6 +5,7 @@ This repository stores the tools and scripts used by Emu68 Imager as follows. Th
 |AreWeOnline|Tom-Cat|
 |CE|Tom-Cat|
 |ListDevices|SupremeTurnip|
+|ListGithubReleases|SupremeTurnip|
 |TomCopy|Tom-Cat|
 |TomDelete|Tom-Cat|
 |WaitforTask|Tom-Cat|
