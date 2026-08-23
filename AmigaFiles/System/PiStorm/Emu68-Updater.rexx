@@ -1,11 +1,11 @@
-/* $VER: Emu68Updater.rexx 1.1.2 (04.05.26)                                   */
+/* $VER: Emu68-Updater.rexx 1.2 (24.08.26)                                   */
 /* Script to update Emu68 and Videocore files                                 */
 /*                                                                            */
 /******************************************************************************/
 /* REQUIREMENTS:                                                              */
 /* - Libraries:           rexxtricks.library                                  */
 /* - Tools (in C:):       aget, areweonline, copyreplace, llist, ListDevices, */ 
-/*                        unzip                                               */
+/*                        unzip, ListGithubReleases                           */
 /* - Scripts (in S:):     progressbar.rexx                                    */ 
 /******************************************************************************/
 
@@ -80,8 +80,6 @@ Emu68FilePath = ''
 
 Call CreateFolder(TempFolder)
 Call CreateFolder(DownloadFolder)
-Call CreateFolder(PrerequisiteDownloadFolder)
-Call CreateFolder(PrerequisiteExtractFolder)
 Call CreateFolder(VersionDataFolder)
 Call CreateFolder(Emu68UpdaterScriptFolder)
 
@@ -105,39 +103,7 @@ if RC>0 then Call CloseProgram("System is currently offline, please enable your 
 
 if ~IsAmiSSL() then call CloseProgram("AmiSSL not available",10,3)
 
-/* Stage One - Perform Prerequisite Checks - Start */
-
-Say 'Stage 1 - Perform Prerequisite Checks'
-
-If ~Exists('c:copyreplace') then DO
-   Say 'copyreplace does not exist.'
-   Call DownloadFile('Downloading copyreplace','http://aminet.net/util/sys/CopyReplace.lha',PrerequisiteDownloadFolder||'/copyreplace.lha',3,1)
-   Call Unlha(PrerequisiteDownloadFolder||'/copyreplace.lha',PrerequisiteExtractFolder||'/')
-   vCmd = 'copy >NIL: FROM "'PrerequisiteExtractFolder||'/copy" TO c:copyreplace CLONE QUIET'
-   If DEBUG = 'TRUE' then say vCmd
-   else vCmd
-END
-
-If ~Exists('c:llist') then DO
-   Say 'llist does not exist.'
-   Call DownloadFile('Downloading llist','http://aminet.net/util/shell/LList.lha',PrerequisiteDownloadFolder||'/llist.lha',3,1)
-   Call Unlha(PrerequisiteDownloadFolder||'/llist.lha',PrerequisiteExtractFolder||'/')
-   vCmd = 'copyreplace >NIL: FROM "'PrerequisiteExtractFolder||'/LList-V39-030" TO c:llist CLONE FOOVR QUIET'
-   If DEBUG = 'TRUE' then say vCmd
-   else vCmd
-END
-
-If ~Exists('c:unzip') then DO
-   Say 'unzip does not exist.'
-   Call DownloadFile('Downloading llist','http://aminet.net/util/arc/UnZIP552.lha',PrerequisiteDownloadFolder||'/Unzip.lha',3,1)
-   Call Unlha(PrerequisiteDownloadFolder||'/unzip.lha',PrerequisiteExtractFolder||'/')
-   vCmd = 'copyreplace >NIL: FROM "'PrerequisiteExtractFolder||'/UnZip552/UnZip" TO c: CLONE FOOVR QUIET'
-   If DEBUG = 'TRUE' then say vCmd
-   else vCmd
-END
-
 Say ''
-
 vCmd = 'SYS:C/version brcm-sdhc.device >NIL:'
 VCmd
 
@@ -254,8 +220,6 @@ If Flag_UpdateEmu68 = "TRUE" then DO
      END
    END  
 end            
-
-/* Stage One - Perform Prerequisite Checks - Finish */
 
 /* Stage One - Retrieve List of Files for Update - Start */
 
@@ -401,16 +365,7 @@ Do i = 1 to ListofUpdateLinesCleansed.0
             end
          end   
          When Source="Github" then DO
-            GithubFilesDownloadURL =''
-            GithubPathJSONURL = SourceLocation
-            GithubPathURL = GitHubPage
-            JsonDownloadPath = TempFolder||'/'||AmigaPackageName||'.json'
-            Call DownloadFile('Looking for release information from Github for '||AmigaPackageName,SourceLocation,JsonDownloadPath,3,0)
-            TagValue = ProcessJSONFile(JsonDownloadPath)
-            if right(GithubName,1)='.' then GithubName = left(GithubName,(length(GithubName)-1))
-            If GithubAppendTagToFileName = "TRUE" then GithubFilesDownloadURL = GitHubPage||'/download/'||TagValue||'/'||GithubName||TagValue||'.zip'
-				Else GithubFilesDownloadURL = GitHubPage||'/download/'||TagValue||'/'||GithubName||'.zip'
-      		Message = 'DLing 'FileDownloadName
+            GithubFilesDownloadURL = GetGithubRelease(GithubPage,GithubName)  
             Call DownloadFile(Message,GithubFilesDownloadURL,DownloadLocation,3,1) 
          END
          Otherwise nop                        
@@ -420,6 +375,7 @@ END
 
 say ''
 say "Completed Downloads!"
+Exit
 say ''
 Say 'Uncompressing Downloaded Files'
 say ''
@@ -758,35 +714,24 @@ Unlha:
    Parse ARG SourcePath, DestinationPath
    vCmd = 'c:lha -aexrm x "'SourcePath'" "'DestinationPath'" >NIL:' 
    VCmd
-   Return  
-ProcessJsonFile:
-   Parse arg  PathtoJsonFile
-   IF ~OPEN(inputfile, PathtoJsonFile, 'R') THEN Call CloseProgram('Could not open Emu68 file details',10,3)
-
-   tag_value = ""
-   target_key = '"tag_name":'
-
-   required_draft_status = '"draft":false'
-   required_prerelease_status = '"prerelease":false'
-
-   DO WHILE ~EOF(inputfile)
-      line = READLN(inputfile) 
-      IF POS(target_key, line) > 0 & POS(required_draft_status, line) > 0 & POS(required_prerelease_status, line) > 0 THEN DO
-         key_pos = POS(target_key, line)
-         value_part = SUBSTR(line, key_pos + LENGTH(target_key))
-         value_part = STRIP(value_part, 'L')
-         IF LEFT(value_part, 1) = '"' THEN DO
-            end_quote_pos = POS('"', SUBSTR(value_part, 2))
-            IF end_quote_pos > 0 THEN DO
-                tag_value = SUBSTR(value_part, 2, end_quote_pos - 1)
-                LEAVE
-            END
+   Return
+GetGithubRelease:
+   parse arg GithubURL,GithubPattern
+   GithubReleaseListTempFile = TempFolder||'/GithubRelease.txt' 
+   vCmd = 'c:ListGithubReleases 'GithubURL' FORMAT=table LINKS pattern='GithubPattern' >'GithubReleaseListTempFile
+   vCmd
+   if READFILE(GithubReleaseListTempFile,GithubReleases) then DO
+      DO i=1 to GithubReleases.0
+         if POS('TAG / VERSION',GithubReleases.i) > 0 then DO 
+            RowNumbertoUse = i+2
+            Leave i
          END
       END
    END
-   CALL CLOSE(inputfile)
-   IF tag_value = "" THEN CALL CloseProgram('Could not find a valid release (draft:false, prerelease:false) in the file.',3,3)
-   ELSE Return tag_value	
+	SAY RowNumbertoUse
+   If ~(RowNumbertoUse > 0) then Call CloseProgram('Could not open Github file details',10,3)
+   parse var GithubReleases.RowNumbertoUse '|'Field1'|'Field2'|'Field3'|'Field4'|'Field5'|'Field6'|'Field7'|'
+   return strip(Field7)     
 CheckUpdateNeeded:
    parse arg OldVersion,NewVersion
   
