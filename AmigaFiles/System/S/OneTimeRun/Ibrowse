@@ -1,0 +1,6 @@
+c:spatch -o[PATH]codecs/gif.codec -p[PATH]codecs040fpu/gif.codec.spatch [PATH]codecs/gif.codec
+c:spatch -o[PATH]codecs/jpeg.codec -p[PATH]codecs040fpu/jpeg.codec.spatch [PATH]codecs/jpeg.codec
+c:spatch -o[PATH]codecs/png.codec -p[PATH]codecs040fpu/png.codec.spatch [PATH]codecs/png.codec
+c:spatch -o[PATH]codecs/xbm.codec -p[PATH]codecs040fpu/xbm.codec.spatch [PATH]codecs/xbm.codec
+c:spatch -o[PATH]codecs/imagedecode.module -p[PATH]codecs040fpu/imagedecode.module.spatch [PATH]codecs/imagedecode.module
+delete [PATH]codecs040fpu/#?  [PATH]codecs040fpu ALL FORCE QUIET

@@ -1,0 +1,9 @@
+if exists Sys:Storage/DosDrivers/_AUX
+   rename Sys:Storage/DosDrivers/_AUX Sys:Storage/DosDrivers/AUX >NIL:
+ENDIF
+if exists Sys:Storage/DosDrivers/_AUX.info
+	rename Sys:Storage/DosDrivers/_AUX.info Sys:Storage/DosDrivers/AUX.info >NIL:
+ENDIF
+If EXISTS SYS:Libs\xad\R.A.W_
+   rename SYS:Libs\xad\R.A.W_ SYS:Libs\xad\R.A.W >NIL:
+ENDIF

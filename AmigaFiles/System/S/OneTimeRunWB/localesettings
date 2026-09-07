@@ -1,0 +1,8 @@
+IF $KickstartVersion EQ 3.9
+   C:AddDataTypes REFRESH QUIET
+ENDIF
+ECHO "Choose your regional settings then press the save button." 
+ECHO "Once you do this your Amiga will reboot"
+ECHO " "
+SYS:Prefs/Locale
+
