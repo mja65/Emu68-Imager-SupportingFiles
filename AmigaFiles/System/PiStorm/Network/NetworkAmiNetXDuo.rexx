@@ -218,7 +218,7 @@ IF action = "CONNECT" then DO
          'delete T:Progressbar.txt >NIL: QUIET'
       END
       SAY ""
-      SAY "Error connecting to Roadshow"
+      SAY "Error connecting to AminetXDuo"
 
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
@@ -235,7 +235,8 @@ IF action = "CONNECT" then DO
    END
 
    if SwitchNoSyncTime = "FALSE" then DO
-      if SwitchSilentRunning = "FALSE" then SAY "Updating system time"
+      if SwitchSilentRunning = "FALSE" then SAY "Updating system time after 3 second pause"
+      'wait 3'
       If ~SyncTime() THEN DO
          CALL CloseWindowMessage()
          EXIT 5
@@ -392,7 +393,6 @@ CloseWindowMessage:
       ADDRESS COMMAND
       'wait sec=3'
       EXIT
-   END
    END
    Return
 
