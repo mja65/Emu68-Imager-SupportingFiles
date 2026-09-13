@@ -1,11 +1,11 @@
-/* $VER: NetworkRoadshow.rexx 1.0.1 (2026-06-30)                                      */
+/* $VER: NetworkAmiTCPNG.rexx 1.0.1 (2026-06-30)                                      */
 /* Script to take Amiga online and offline including sync of clock            */
 /*                                                                            */
 
 /******************************************************************************
  *                                                                            *
  * REQUIREMENTS:                                                              *
- * - IP Stack:            Roadshow                                   *
+ * - IP Stack:            AmiTCPNG                              *
  * - Devices:             genet.device or wifipi.device or                    *
  *                        uaenet.device(for UAE, built-in)                    *
  *                        or v2expeth.device (Apollo V2)                      *
@@ -78,7 +78,7 @@ WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 WifiPiDevicePath   = "Sys:Devs/Networks/wifipi.device"
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
 sntpLog = "RAM:sntplog.txt"
-RoadshowParametersFile = "Sys:Pistorm/RoadshowParameters"
+AmiTCPNGParametersFile = "Sys:Pistorm/AmiTCPNGParameters"
 
 IF DEBUG = "TRUE" then DO
    SAY "Debug mode on"
@@ -94,7 +94,7 @@ IF DEBUG = "TRUE" then DO
    SAY "WifiPiDevicePath: "WifiPiDevicePath
    SAY "WirelesslogFilePath: "WirelesslogFilePath
    SAY "sntpLog: "sntplog
-   SAY "RoadshowParametersFile: "RoadshowParametersFile
+   SAY "AmiTCPNGParametersFile: "AmiTCPNGParametersFile
 END
 
 IF action = "CONNECT" then DO
@@ -213,7 +213,7 @@ IF action = "CONNECT" then DO
       END
    END
 
-   CALL LoadRoadshowParams(DevicebaseName)
+   CALL LoadAmiTCPNGParams(DevicebaseName)
    If SwitchSilentRunning = "FALSE" then DO
       'setenv InProgressBar Connecting to Network'
       'run >T:Progressbar.txt rx S:ProgressBar.rexx'
@@ -226,7 +226,7 @@ IF action = "CONNECT" then DO
          'delete T:Progressbar.txt >NIL: QUIET'
       END
       SAY ""
-      SAY "Error connecting to Roadshow"
+      SAY "Error connecting to AmiTCPNG"
 
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
@@ -290,7 +290,7 @@ IF action = "DISCONNECT" then DO
       SAY "Killing network shares"
    END
    CALL KillNetworkShares()
-   CALL KillRoadshow()
+   CALL KillAmiTCPNG()
    IF SwitchNoCloseWirelessManager = "FALSE" THEN DO
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
@@ -343,7 +343,7 @@ IsUAE:
       If debug = "TRUE" THEN SAY "UAE detected"
       RETURN 1
    END
-KillRoadshow:
+KillAmiTCPNG:
    'c:Netshutdown >NIL:'
    Return
   
@@ -393,9 +393,9 @@ RpiVersion:
    'version brcm-sdhc.device >NIL:'
    if RC=0 then RETURN 'RPi3'
    Return "Unknown"
-LoadRoadshowParams:
+LoadAmiTCPNGParams:
    PARSE ARG targetDevice
-   if ~READFILE(RoadshowParametersFile,ReadLines) then RETURN
+   if ~READFILE(AmiTCPNGParametersFile,ReadLines) then RETURN
    do i=1 to Readlines.0
    IF Readlines.i = "" | LEFT(Readlines.i, 1) = ";" THEN iterate
      parse var Readlines.i vType';'vParameter';'vValue
@@ -423,7 +423,7 @@ CloseWindowMessage:
 
 ShowUsage:
    SAY ""
-   SAY "Arexx program to connect to network using Roadshow and to synchronise time"
+   SAY "Arexx program to connect to network using AmiTCPNG and to synchronise time"
    SAY ""
    SAY "Usage: Rx Network.rexx ACTION=<Action Type> DEVICE=<Selected Device> <Options>"
    SAY "<Action Type>: Connect, Disconnect"

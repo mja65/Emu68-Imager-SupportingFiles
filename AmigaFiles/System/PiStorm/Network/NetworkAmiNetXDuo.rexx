@@ -78,7 +78,7 @@ WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 WifiPiDevicePath   = "Sys:Devs/Networks/wifipi.device"
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
 sntpLog = "RAM:sntplog.txt"
-RoadshowParametersFile = "Sys:Pistorm/RoadshowParameters"
+
 
 IF DEBUG = "TRUE" then DO
    SAY "Debug mode on"
@@ -94,7 +94,6 @@ IF DEBUG = "TRUE" then DO
    SAY "WifiPiDevicePath: "WifiPiDevicePath
    SAY "WirelesslogFilePath: "WirelesslogFilePath
    SAY "sntpLog: "sntplog
-   SAY "RoadshowParametersFile: "RoadshowParametersFile
 END
 
 IF action = "CONNECT" then DO
@@ -236,7 +235,6 @@ IF action = "CONNECT" then DO
 
    if SwitchNoSyncTime = "FALSE" then DO
       if SwitchSilentRunning = "FALSE" then SAY "Updating system time after 3 second pause"
-      'wait 3'
       If ~SyncTime() THEN DO
          CALL CloseWindowMessage()
          EXIT 5
