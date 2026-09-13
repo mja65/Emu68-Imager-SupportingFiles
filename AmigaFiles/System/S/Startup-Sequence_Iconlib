@@ -1,0 +1,4 @@
+If NOT $KICKVER EQ 47
+   C:RemLib >NIL: icon.library
+EndIf
+

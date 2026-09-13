@@ -1,0 +1,9 @@
+# All options MUST BE on the same line with no carriage returns!
+# For documentation including all available options, visit https://michalsc.github.io/Emu68/Options.html
+# Options you may wish to include:
+# move_slow_to_chip Maps 512K memory expansion of A500 to the CHIP ram range without physical changes to your motherboard if you have an ECS Agnus that supports it
+# swap_df0_with_df1 Swaps DF0 with DF1 floppy drive
+# swap_df0_with_df2 Swaps DF0 with DF2 floppy drive
+# swap_df0_with_df3 Swaps DF0 with DF3 floppy drive
+#
+[CMDLINE]

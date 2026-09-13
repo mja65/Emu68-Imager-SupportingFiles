@@ -1,0 +1,171 @@
+[all]
+disable_splash=1
+arm_64bit=1
+
+# Default boot delay is one second. Uncomment this line if you want zero second delay
+#boot_delay=0
+bootcode_delay=1
+
+total_mem=2048   
+
+[pi4]
+arm_boost=1
+
+# If you have a 1st generation RPi4, uncomment the below:
+# arm_freq=1800
+
+# Uncomment the below to enable the USB-C port
+#otg_mode=1 
+
+[cm4]
+# The following is used to activate the external wifi antenna for CM4 users. To use, uncomment BOTH the lines below!
+# dtoverlay=
+# dtoverlay=ant2
+# Uncomment the below to enable the USB-C port
+otg_mode=1 
+[all]
+
+# This is important so that GPU firmware does not add its overlay icons on the screen
+# If you also want to disable speed throttling in case of undervoltage, set this value to 2
+avoid_warnings=1
+
+# Enable the options below to increase speed of ARM cpu to 1.5GHz
+# Keep in mind this may render your RasPi3 unstable and eventually void the warranty!
+#force_turbo=1
+#over_voltage=4
+#arm_freq=1800
+#core_freq=500
+#sdram_freq=600
+
+# Force HDMI signal even if nothing is connected
+hdmi_force_hotplug=1
+
+# Limit GPU memory a little, force 1080p video mode. Comment out the hdmi_mode line if your monitor
+# does not like it. For list of all modes please refer to RasPi documentation
+# https://www.raspberrypi.com/documentation/computers/config_txt.html#hdmi-mode
+gpu_mem=32
+
+# This section is for adding any custom dtparam or dtoverlay options that you want to be added to the config.txt.
+# You can add any options that are supported by the Emu68 DT overlays, but the more common ones are listed below as examples.
+# For full documentation including a full list of parameters, open the overlays.md file in the Overlays folder or go to 
+# https://github.com/michalsc/Emu68/blob/master/documentation/overlays.md
+
+# emu68.dtbo
+# Controls behaviour of Emu68
+
+# dtparam options:
+# ICNT=num
+# CCRD=num
+# IRNG=num
+# SC
+# SCS=num
+# BW
+# DBF
+[DTOVERLAY_EMU68]
+
+# diagnostic.dtbo
+# Controls several diagnostic features of Emu68
+
+# dtparam options:
+# buptest - Enables simplistic bus test of the PiStorm
+# bupsize=num - Number of bytes to test
+# bupiter=num - Sets the number of iterations
+[DTOVERLAY_DIAGNOSTIC]
+
+# noscsi.dtbo
+# Disables scsi.device
+[DTOVERLAY_NOSCSI]
+
+# pal.dtbo
+# force the Amiga into PAL mode (i.e. where your Agnus is NTSC)
+[DTOVERLAY_PAL]
+
+# ntsc.dtbo
+# force the Amiga into NTSC mode (i.e. where your Agnus is PAL)
+[DTOVERLAY_NTSC]
+
+# sdhc.dtbo
+# Controls behaviour of the brcm-sdhc.device driver used by Pi3 and PiZero2 models. 
+
+# dtparam options:
+# disable - disable the driver entirely
+# low_speed - force low-speed mode
+# clock=num = overclock high-speed mode to num MHz
+# unit0=off/ro/rw - Makes the unit 0 hidden (off), read-only (ro) or writable (rw)
+# irq - enable using irq (experimental feature)
+# dma - enable using dma (experimental feature, also enables irq)
+[DTOVERLAY_SDHC]
+
+# emmc.dtbo
+# Controls behavior of the brcm-emmc.device driver used by Pi4 and CM4 models.
+
+# dtparam options:
+# disable - disable the driver entirely
+# low_speed - force low-speed mode
+# clock=num = overclock high-speed mode to num MHz
+# unit0=off/ro/rw - Makes the unit 0 hidden (off), read-only (ro) or writable (rw)
+# irq - enable using irq (experimental feature)
+# dma - enable using dma (experimental feature, also enables irq)
+[DTOVERLAY_EMMC]
+
+# unicam.dtbo
+# Enable and control unicam interface which allows using either Framethrower or C790 compatible HDMI to CSI converters.
+
+# dtparam options:
+# boot	Enable Framethrower/c790 on boot
+# w=num	Limit visible width of the image to num pixels
+# h=num	Limit visible height of the image to num pixels
+# x=num	If visible image width is smaller than the full width, define horizontal offset to num pixels
+# y=num	If visible image height is smaller than the full heightz, define vertical offset to num pixels
+# asp=num	Correct aspect ratio of the image, 1000 is default, other values stretch the image
+# smooth	Enable smooth upscaling of the image
+# int	Allow only integer upscaling (x1, x2, etc)
+# ph=num	Adjust phase parameter for upscaler with num between 0 and 255
+# b=num	Adjust B parameter of Mitchell-Netravali upscaler with num between 0 and 1000
+# c=num	Adjust C parameter of Mitchell-Netravali upscaler with num between 0 and 1000
+# sc=num	Adjust Framethrower scanlines for non-laced modes with num between 0 and 4
+# scl=num	Adjust Framethrower scanlines for laced modes with num between 0 and 4
+# type=x	Allows to switch from default Framethrower mode (ft) to C790 mode (c790)
+[DTOVERLAY_UNICAM]
+
+[VIDEOMODES]
+
+# Experimental 2560x1440 50Hz mode for RaspberryPi which you can give a try. If you do, 
+# comment the hdmi_mode above
+#hdmi_group=2
+#hdmi_mode=87
+#hdmi_cvt=2560 1440 50 3 0 0 1
+#max_framebuffer_width=2560
+#max_framebuffer_height=1440
+#hdmi_pixel_freq_limit=400000000
+
+# The ROM is selected through initramfs parameter. As a file name give the full name of your
+# kickstart file which you have placed on the RasPi boot partition. If there is a development version
+# of FPGA firmware to load (PS32Lite) or to upgrade (all others, not yet implemented), it must be
+# gzip-compressed and passed **before** the ROM name, separated from the rom with a comma.
+# NOTE: The default firmware for PS32Lite is already embedded in Emu68!!! Above instruction is
+# for test/development purposes **ONLY**
+#initramfs firmware.bin.gz,kick.rom
+
+[all]
+#-Pistorm detection
+gpio=0-27=ip
+gpio=0-27=pu
+
+[all]
+# PiStorm32lite Boot
+[gpio24=0]
+kernel=Emu68-pistorm.gz
+[ROMPATH]
+
+[all]
+# PiStorm16 Boot
+[gpio24=1]
+kernel=Emu68-pistorm.gz
+[ROMPATH]
+
+[all]
+## PiStorm Boot 
+[gpio17=0]
+kernel=Emu68-pistorm-classic.gz
+[ROMPATH]

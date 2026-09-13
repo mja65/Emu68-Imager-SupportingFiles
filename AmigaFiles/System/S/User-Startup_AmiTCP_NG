@@ -1,0 +1,8 @@
+Assign >NIL: AmiTCP: SYS:Programs/AmiTCP
+; Start the stack in the background so the loopback interface (lo0) is up
+; Run detaches it -- if the stack ever stalled, the boot is NOT held up
+; No hardware NIC is touched here (that is done manually, once the link
+; is ready). GetNetStatus just opens the library, which self-starts.
+If EXISTS C:GetNetStatus
+   Run >NIL: <NIL: C:GetNetStatus >NIL:
+EndIf
