@@ -1,4 +1,4 @@
-This repository stores the tools and scripts used by Emu68 Imager as follows. The following table outlines software subject to the licence attached to this repository. Everything else can be considered freely distributable and can be used without any restriction.
+This repository stores the tools and scripts used by Emu68 Imager as follows. The following table outlines software subject to the licence attached to this repository. Everything else is either freely distributable and can be used without any restriction or is an external package.
 
 | Software | Author | 
 | -------- | -------- |
@@ -11,7 +11,9 @@ This repository stores the tools and scripts used by Emu68 Imager as follows. Th
 |WaitforTask|Tom-Cat|
 |Emu68-Updater|Shaytan and SupremeTurnip|
 |SMB Config|Shaytan|
-|Wifi Config|Shaytan|
-|Network.rexx|SupremeTurnip|
+|Wifi Config|Shaytan||
 |NetworkMiami.rexx|SupremeTurnip|
-|NetworkRoadhsow.rexx|SupremeTurnip|
+|NetworkRoadhshow.rexx|SupremeTurnip|
+|NetworkAmiTCPNG.rexx|SupremeTurnip|
+|NetworkAminetXDuo.rexx|SupremeTurnip|
+|TransferKick|SupremeTurnip|
