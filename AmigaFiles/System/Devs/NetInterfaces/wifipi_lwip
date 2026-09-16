@@ -1,0 +1,52 @@
+; lwip-amiga network interface "wifipi"
+;
+; The FILE NAME is the interface name (15 characters max). Add it with
+;   AddNetInterface genet
+; or let the boot line in S:Network-Startup pick up every file here:
+;   AddNetInterface DEVS:NetInterfaces/~(#?.info) QUIET
+; Remove it with:  RemoveNetInterface genet
+;
+; One option per line: the option name, then '=' or blanks, then the value.
+; Lines starting with '#' or ';' are comments; a comment after an option on
+; the same line is NOT allowed (it would become part of the value). Unknown
+; options are reported as warnings and skipped. DEVICE is required. No
+; ADDRESS (or ADDRESS=DHCP) means DHCP. DNS servers are stack-wide - set them
+; in ENV:netstack.prefs, not here. An optional icon on this file may carry a
+; PRI=<n> tooltype to order multi-file adds.
+
+DEVICE=networks/wifipi.device
+UNIT=0
+ADDRESS=DHCP
+
+; A bare driver name is looked up in DEVS:Networks/ first, so this is the
+; same as the line above:
+;DEVICE=wifipi.device
+
+; Driver interface. AUTO (the default) probes the device - both netdev and
+; classic SANA-II drivers are supported. Force NETDEV or SANA2 to skip the
+; probe.
+TYPE=SANA2
+
+; Static configuration instead of DHCP: a dotted-quad ADDRESS needs
+; NETMASK. GATEWAY is optional, but without it there is no default route.
+;ADDRESS=192.168.1.50
+;NETMASK=255.255.255.0
+;GATEWAY=192.168.1.1
+
+; MTU may only lower the driver's value.
+;MTU=1500
+
+; In-band 802.1Q VLAN tag: vid[,pcp] (vid 1..4094, pcp 0..7).
+;VLAN=100,3
+
+; DHCP client hostname for this interface (option 12); defaults to the
+; stack-wide HOSTNAME from netstack.prefs.
+;ID=amiga
+
+; Use this MAC address instead of the card's own. Pick a locally
+; administered one (second hex digit 2, 6, A or E). A driver that has already
+; been configured keeps its address until the next reboot.
+;HARDWAREADDRESS=02:00:00:12:34:56
+
+; STATE=DOWN keeps the file in the drawer without adding the interface.
+;STATE=DOWN

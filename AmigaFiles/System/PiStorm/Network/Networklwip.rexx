@@ -1,17 +1,17 @@
-/* $VER: NetworkAmiNetXDuo.rexx 1.0.1 (2026-06-30)                            */
+/* $VER: Networklwip.rexx 1.0.1 (2026-06-30)                                      */
 /* Script to take Amiga online and offline including sync of clock            */
 /*                                                                            */
 
 /******************************************************************************
  *                                                                            *
  * REQUIREMENTS:                                                              *
- * - IP Stack:            AmiNetXDuo                                *
+ * - IP Stack:            lwip                                *
  * - Devices:             genet.device or wifipi.device or                    *
  *                        uaenet.device(for UAE, built-in)                    *
  *                        or v2expeth.device (Apollo V2)                      *
  * - Libraries:           rexxtricks.library                                  *
  * - Tools (in C:):       SetDST, WirelessManager, WaitUntilConnected, sntp,  *
- *                        mecho,KillDev,ListDevices,                          *
+ *                        mecho,KillDev,ListDevices, areweonline,             *
  *                        ApolloControl (Apollo only)                         *
  * - Script (in S:):      ProgressBar                                         *
  *                                                                            *
@@ -62,8 +62,8 @@ IF device ~= "" & ~POS(".", device) > 0 THEN device = device || ".DEVICE"
 
 IF action = "CONNECT" then DO
    DevicebaseName = left(device,(LENGTH(device) - 7))
-   IF FIND("WIFIPI ANXGENET GENET UAENET V2EXPETH",DevicebaseName) = 0 THEN DO
-      SAY "Error: Unsupported DEVICE '"DevicebaseName"'. Supported: wifipi.device, anxgenet.device, genet.device, uaenet.device, v2expeth.device"
+   IF FIND("WIFIPI GENET UAENET V2EXPETH",DevicebaseName) = 0 THEN DO
+      SAY "Error: Unsupported DEVICE '"DevicebaseName"'. Supported: wifipi.device, genet.device, uaenet.device, v2expeth.device"
       CALL CloseWindowMessage()
       EXIT 10
    END
@@ -78,7 +78,6 @@ WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 WifiPiDevicePath   = "Sys:Devs/Networks/wifipi.device"
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
 sntpLog = "RAM:sntplog.txt"
-
 
 IF DEBUG = "TRUE" then DO
    SAY "Debug mode on"
@@ -97,7 +96,14 @@ IF DEBUG = "TRUE" then DO
 END
 
 IF action = "CONNECT" then DO
-   Netshutdown
+   'areweonline'
+   If RC = 0 then DO 
+	   SAY ""
+		SAY "You are already online! Disconnect first."
+		CALL CloseWindowMessage()
+      EXIT 10
+   END
+   
    IF device = "WIFIPI.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO
          SAY ""
@@ -184,23 +190,6 @@ IF action = "CONNECT" then DO
       END   
    END
 	
-	   IF device = "ANXGENET.DEVICE" THEN DO
-      If SwitchSilentRunning = "FALSE" then DO 
-         SAY ""
-         SAY "Connecting to Ethernet"
-      END
-      If RPIVersion() ~= "RPi4" then DO
-         SAY ""
-         Say "ANXGenet.device only works on Pistorm with Raspberry Pi4 or CM4! Aborting!"
-         CALL CloseWindowMessage()
-         EXIT 10
-      END
-      If ~KillWirelessManager() then DO
-         CALL CloseWindowMessage()
-         EXIT 10
-      END   
-   END
-	
    IF device = "UAENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
          SAY ""
@@ -234,7 +223,7 @@ IF action = "CONNECT" then DO
          'delete T:Progressbar.txt >NIL: QUIET'
       END
       SAY ""
-      SAY "Error connecting to AminetXDuo"
+      SAY "Error connecting to lwip"
 
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
@@ -251,7 +240,7 @@ IF action = "CONNECT" then DO
    END
 
    if SwitchNoSyncTime = "FALSE" then DO
-      if SwitchSilentRunning = "FALSE" then SAY "Updating system time after 3 second pause"
+      if SwitchSilentRunning = "FALSE" then SAY "Updating system time"
       If ~SyncTime() THEN DO
          CALL CloseWindowMessage()
          EXIT 5
@@ -298,7 +287,7 @@ IF action = "DISCONNECT" then DO
       SAY "Killing network shares"
    END
    CALL KillNetworkShares()
-   CALL KillAmiNetXDuo()
+   CALL KillLwip()
    IF SwitchNoCloseWirelessManager = "FALSE" THEN DO
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
@@ -351,7 +340,7 @@ IsUAE:
       If debug = "TRUE" THEN SAY "UAE detected"
       RETURN 1
    END
-KillAmiNetXDuo:
+KillLwip:
    'c:Netshutdown >NIL:'
    Return
   
@@ -413,11 +402,11 @@ CloseWindowMessage:
 
 ShowUsage:
    SAY ""
-   SAY "Arexx program to connect to network using AmiNetXDuo and to synchronise time"
+   SAY "Arexx program to connect to network using Lwip and to synchronise time"
    SAY ""
    SAY "Usage: Rx Network.rexx ACTION=<Action Type> DEVICE=<Selected Device> <Options>"
    SAY "<Action Type>: Connect, Disconnect"
-   SAY "<Selected Device>: WifiPi, AnxGenet, Genet, Uaenet, V2expeth (applicable for Connect action type)"
+   SAY "<Selected Device>: WifiPi, Genet, Uaenet, V2expeth (applicable for Connect action type)"
    SAY "<Options>: NoSyncTime, NoRestartWirelessManager (applicable for connect action type)"
    SAY "<Options>: NoCloseWirelessManager, NoCloseMiami (applicable for disconnect action type)"
    SAY "<Options>: Debug, WaitatEnd"

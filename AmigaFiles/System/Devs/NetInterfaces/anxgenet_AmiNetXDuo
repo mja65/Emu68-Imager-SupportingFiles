@@ -1,0 +1,42 @@
+; DEVS:NetInterfaces/eth0 -- written by the AmiNetXDuo installer.
+;
+; The name of this file is the name of the interface.  Use it
+; with the network commands:
+;
+;     Online eth0
+;     Offline eth0
+;     ShowNetStatus INTERFACE eth0
+;
+; DEVICE     the SANA-II driver for the card.  A bare name is
+;            looked up in DEVS:.  A path is used as given.
+; UNIT       which card, when one driver has several.
+; CONFIGURE  how the address is obtained:
+;              DHCP   -- ask the network (the usual choice)
+;              AUTO   -- self-assign 169.254.x.x with no DHCP
+;              STATIC -- use the ADDRESS/NETMASK below
+;              NONE   -- no IPv4 here, IPv6 carries this
+;                        interface
+;            Note this keyword is CONFIGURE, not IPTYPE.  In
+;            Roadshow IPTYPE is the SANA-II packet type, a
+;            number, and defaults to 2048.
+;
+; MDNS=  YES -- answer .local queries on this interface
+;        NO  -- do not, which is the default when the
+;               keyword is absent.  The responder costs
+;               real time on a slow machine, even when
+;               nothing asks it anything.
+;
+; An IPv6 build also understands CONFIGURE6 (OFF, LINKLOCAL,
+; AUTO, DHCP or STATIC), ADDRESS6 and GATEWAY6.  A build
+; without IPv6 ignores them, so they are safe to leave in
+; place.  AUTO follows the router, which is what an IPv6-only
+; machine behind a managed router needs; see
+; Examples/NetInterfaces/eth0-ipv6.
+;
+DEVICE=DEVS:Networks/anxgenet.device
+UNIT=0
+CONFIGURE=DHCP
+MDNS=YES
+;ADDRESS=192.168.1.10
+;NETMASK=255.255.255.0
+;CONFIGURE6=AUTO
