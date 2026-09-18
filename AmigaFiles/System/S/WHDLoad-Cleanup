@@ -21,3 +21,15 @@ If $IPStack EQ AmiTCPNG
       SYS:Rexxc/rx SYS:PiStorm/Network/NetworkAmiTCPNG.rexx Action=connect Device=$ConnectionType KeepEnvStatus SilentRunning
    ENDIF
 ENDIF
+
+If $IPStack EQ AminetXDuo
+   IF EXISTS ENV:ConnectionType
+      SYS:Rexxc/rx SYS:PiStorm/Network/NetworkAmiNetXDuo.rexx Action=connect Device=$ConnectionType KeepEnvStatus SilentRunning
+   ENDIF
+ENDIF
+
+If $IPStack EQ lwip
+   IF EXISTS ENV:ConnectionType
+      SYS:Rexxc/rx SYS:PiStorm/Network/lwip.rexx Action=connect Device=$ConnectionType KeepEnvStatus SilentRunning
+   ENDIF
+ENDIF

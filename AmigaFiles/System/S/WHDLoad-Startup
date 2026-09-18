@@ -15,6 +15,12 @@ If $RC EQ 0
 	IF $IPStack EQ Miami
 	   SYS:Rexxc/rx SYS:PiStorm/network/NetworkMiami.rexx Action=Disconnect KeepEnvStatus SilentRunning
    ENDIF
+	IF $IPStack EQ AminetXDuo
+	   SYS:Rexxc/rx SYS:PiStorm/network/NetworkAminetXDuo.rexx Action=Disconnect KeepEnvStatus SilentRunning
+   ENDIF
+	IF $IPStack EQ lwip
+	   SYS:Rexxc/rx SYS:PiStorm/network/Networklwip.rexx Action=Disconnect KeepEnvStatus SilentRunning
+   ENDIF
 ELSE
 ;If somehow we are offline but the environment variables are set, then remove them. This prevents the cleanup script bringing the Amiga online when it was offline to start
 	Unsetenv ConnectionType
