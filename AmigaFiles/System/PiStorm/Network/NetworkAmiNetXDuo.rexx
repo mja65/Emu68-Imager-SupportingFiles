@@ -5,8 +5,9 @@
 /******************************************************************************
  *                                                                            *
  * REQUIREMENTS:                                                              *
- * - IP Stack:            AmiNetXDuo                                *
+ * - IP Stack:            AmiNetXDuo                                          *
  * - Devices:             genet.device or wifipi.device or                    *
+ *                        anxgenet.device or anxwifipi.device or              *
  *                        uaenet.device(for UAE, built-in)                    *
  *                        or v2expeth.device (Apollo V2)                      *
  * - Libraries:           rexxtricks.library                                  *
@@ -62,8 +63,8 @@ IF device ~= "" & ~POS(".", device) > 0 THEN device = device || ".DEVICE"
 
 IF action = "CONNECT" then DO
    DevicebaseName = left(device,(LENGTH(device) - 7))
-   IF FIND("WIFIPI ANXGENET GENET UAENET V2EXPETH",DevicebaseName) = 0 THEN DO
-      SAY "Error: Unsupported DEVICE '"DevicebaseName"'. Supported: wifipi.device, anxgenet.device, genet.device, uaenet.device, v2expeth.device"
+   IF FIND("ANXWIFIPI WIFIPI ANXGENET GENET UAENET V2EXPETH",DevicebaseName) = 0 THEN DO
+      SAY "Error: Unsupported DEVICE '"DevicebaseName"'. Supported: anxwifipi.device wifipi.device, anxgenet.device, genet.device, uaenet.device, v2expeth.device"
       CALL CloseWindowMessage()
       EXIT 10
    END
@@ -75,7 +76,13 @@ IF POS('DEBUG', input) > 0 THEN DEBUG = "TRUE"
 ADDRESS COMMAND
 
 WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
-WifiPiDevicePath   = "Sys:Devs/Networks/wifipi.device"
+SELECT
+   WHEN device = "ANXWIFIPI.DEVICE" THEN DevicePath = "Devs:Networks/anxwifipi.device"
+   WHEN device = "WIFIPI.DEVICE" THEN DevicePath = "Devs:Networks/wifipi.device"  
+	WHEN device = "GENET.DEVICE" THEN DevicePath = "Devs:Networks/genet.device"
+	WHEN device = "ANXGENET.DEVICE" THEN DevicePath = "Devs:Networks/anxgenet.device"
+   OTHERWISE NOP
+END
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
 sntpLog = "RAM:sntplog.txt"
 
@@ -97,15 +104,19 @@ IF DEBUG = "TRUE" then DO
 END
 
 IF action = "CONNECT" then DO
-   Netshutdown
-   IF device = "WIFIPI.DEVICE" THEN DO
+   'Netshutdown >NIL:'
+	If ~KillWirelessManager() then DO
+      CALL CloseWindowMessage()
+      EXIT 10
+   END  
+   IF device = "WIFIPI.DEVICE" | device = "ANXWIFIPI.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO
          SAY ""
          SAY "Connecting to Wifi Network"
       END
       If upper(RPIVersion()) = "UNKNOWN" then DO
          SAY ""
-         Say "Wifipi.device only works on Pistorm! Aborting!"
+         Say "Wifipi.device and AnxWifipi.device only works on Pistorm! Aborting!"
          CALL CloseWindowMessage()
          EXIT 10
       END
@@ -143,8 +154,8 @@ IF action = "CONNECT" then DO
          'setenv InProgressBar Connecting to Wireless'
          'run >T:Progressbar.txt rx S:ProgressBar.rexx'
       END
-      'Run >NIL: C:wirelessmanager device='WifiPiDevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
-      'C:WaitUntilConnected device='WifiPiDevicePath' Unit=0 delay=100'
+      'Run >NIL: C:wirelessmanager device='DevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
+      'C:WaitUntilConnected device='DevicePath' Unit=0 delay=100'
       If RC = 0 then DO
          If SwitchSilentRunning = "FALSE" then DO 
             'setenv InProgressBar COMPLETE'
@@ -167,14 +178,14 @@ IF action = "CONNECT" then DO
       END
    END
 	
-   IF device = "GENET.DEVICE" THEN DO
+   IF device = "GENET.DEVICE" | device = "ANXGENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
          SAY ""
          SAY "Connecting to Ethernet"
       END
       If RPIVersion() ~= "RPi4" then DO
          SAY ""
-         Say "Genet.device only works on Pistorm with Raspberry Pi4 or CM4! Aborting!"
+         Say "Genet.device and AnxGenet.device only works on Pistorm with Raspberry Pi4 or CM4! Aborting!"
          CALL CloseWindowMessage()
          EXIT 10
       END
@@ -183,24 +194,7 @@ IF action = "CONNECT" then DO
          EXIT 10
       END   
    END
-	
-	   IF device = "ANXGENET.DEVICE" THEN DO
-      If SwitchSilentRunning = "FALSE" then DO 
-         SAY ""
-         SAY "Connecting to Ethernet"
-      END
-      If RPIVersion() ~= "RPi4" then DO
-         SAY ""
-         Say "ANXGenet.device only works on Pistorm with Raspberry Pi4 or CM4! Aborting!"
-         CALL CloseWindowMessage()
-         EXIT 10
-      END
-      If ~KillWirelessManager() then DO
-         CALL CloseWindowMessage()
-         EXIT 10
-      END   
-   END
-	
+		
    IF device = "UAENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
          SAY ""

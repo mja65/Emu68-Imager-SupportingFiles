@@ -1,5 +1,5 @@
 ;
-; DEVS:NetInterfaces/genet
+; DEVS:NetInterfaces/anxwifipi
 ;
 ; The reference example.  Every keyword AmiNetXDuo understands is here, most
 ; of them commented out.  The other files in this drawer are the short
@@ -29,7 +29,7 @@
 ;
 ;     DEVICE=DEVS:Networks/ariadne.device
 ;
-DEVICE=DEVS:Networks/genet.device
+DEVICE=DEVS:Networks/anxwifipi.device
 
 ; UNIT -- which card, when one driver drives several.  Almost always 0.
 UNIT=0
