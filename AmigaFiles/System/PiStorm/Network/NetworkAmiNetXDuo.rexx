@@ -78,13 +78,15 @@ ADDRESS COMMAND
 WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 SELECT
    WHEN device = "ANXWIFIPI.DEVICE" THEN DO
-	   DevicePath = "Devs:Networks/anxwifipi.device"
-		WirelessManagerPath = "C:wirelessmanager"
+      DevicePath = "Devs:Networks/anxwifipi.device"
+      WirelessManagerPath = "C:wirelessmanager"
+   END
    WHEN device = "WIFIPI.DEVICE" THEN DO
-	   DevicePath = "Devs:Networks/wifipi.device"  
-		WirelessManagerPath = "C:wirelessmanager"
-	WHEN device = "GENET.DEVICE" THEN DevicePath = "Devs:Networks/genet.device"
-	WHEN device = "ANXGENET.DEVICE" THEN DevicePath = "Devs:Networks/anxgenet.device"
+      DevicePath = "Devs:Networks/wifipi.device"  
+      WirelessManagerPath = "C:wirelessmanager"
+   END
+   WHEN device = "GENET.DEVICE" THEN DevicePath = "Devs:Networks/genet.device"
+   WHEN device = "ANXGENET.DEVICE" THEN DevicePath = "Devs:Networks/anxgenet.device"
    OTHERWISE NOP
 END
 WirelesslogFilePath   = "RAM:wirelessmanagerlog.txt"
