@@ -11,9 +11,9 @@
  *                        uaenet.device(for UAE, built-in)                    *
  *                        or v2expeth.device (Apollo V2)                      *
  * - Libraries:           rexxtricks.library                                  *
- * - Tools (in C:):       SetDST, WirelessManager, WaitUntilConnected, sntp,  *
- *                        mecho,KillDev,ListDevices,                          *
- *                        ApolloControl (Apollo only)                         *
+ * - Tools (in C:):       SetDST, WirelessManager, WirelessManager13,         * 
+ *                        WaitUntilConnected, sntp, mecho,KillDev,            *
+ *                        ListDevices, ApolloControl (Apollo only)            *
  * - Script (in S:):      ProgressBar                                         *
  *                                                                            *
  *****************************************************************************/
@@ -77,8 +77,12 @@ ADDRESS COMMAND
 
 WirelessprefsPath = "SYS:Prefs/Env-Archive/sys/wireless.prefs"
 SELECT
-   WHEN device = "ANXWIFIPI.DEVICE" THEN DevicePath = "Devs:Networks/anxwifipi.device"
-   WHEN device = "WIFIPI.DEVICE" THEN DevicePath = "Devs:Networks/wifipi.device"  
+   WHEN device = "ANXWIFIPI.DEVICE" THEN DO
+	   DevicePath = "Devs:Networks/anxwifipi.device"
+		WirelessManagerPath = "C:wirelessmanager"
+   WHEN device = "WIFIPI.DEVICE" THEN DO
+	   DevicePath = "Devs:Networks/wifipi.device"  
+		WirelessManagerPath = "C:wirelessmanager13"
 	WHEN device = "GENET.DEVICE" THEN DevicePath = "Devs:Networks/genet.device"
 	WHEN device = "ANXGENET.DEVICE" THEN DevicePath = "Devs:Networks/anxgenet.device"
    OTHERWISE NOP
@@ -154,7 +158,7 @@ IF action = "CONNECT" then DO
          'setenv InProgressBar Connecting to Wireless'
          'run >T:Progressbar.txt rx S:ProgressBar.rexx'
       END
-      'Run >NIL: C:wirelessmanager device='DevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
+      'Run >NIL: 'WirelessManagerPath' device='DevicePath' CONFIG='WirelessprefsPath' VERBOSE >'WirelesslogFilePath
       'C:WaitUntilConnected device='DevicePath' Unit=0 delay=100'
       If RC = 0 then DO
          If SwitchSilentRunning = "FALSE" then DO 
@@ -367,7 +371,7 @@ KillNetworkShares:
    'delete T:NetworkShares.txt QUIET >NIL:'
    RETURN   
 KillWirelessManager:
-   'Status COM=c:wirelessmanager >ENV:WirelessManagerPID'
+   'Status COM='WirelessManagerPath' >ENV:WirelessManagerPID'
    ProcessNumber = GETENV(WirelessManagerPID)
    IF ProcessNumber ~= "" THEN DO
       IF SwitchSilentRunning = "FALSE" then DO
