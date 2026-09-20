@@ -82,7 +82,7 @@ SELECT
 		WirelessManagerPath = "C:wirelessmanager"
    WHEN device = "WIFIPI.DEVICE" THEN DO
 	   DevicePath = "Devs:Networks/wifipi.device"  
-		WirelessManagerPath = "C:wirelessmanager13"
+		WirelessManagerPath = "C:wirelessmanager"
 	WHEN device = "GENET.DEVICE" THEN DevicePath = "Devs:Networks/genet.device"
 	WHEN device = "ANXGENET.DEVICE" THEN DevicePath = "Devs:Networks/anxgenet.device"
    OTHERWISE NOP
