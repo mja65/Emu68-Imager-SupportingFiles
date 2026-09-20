@@ -1,9 +1,10 @@
-This repository stores the tools and scripts used by Emu68 Imager as follows. The following table outlines software subject to the licence attached to this repository. Everything else is either freely distributable and can be used without any restriction or is an external package.
+This repository stores the tools and scripts used by Emu68 Imager. The following table outlines software subject to the licence attached to this repository. Everything else is either an external package subject to its own licencing or freely distributable and can be used without any restriction.
 
 | Software | Author | 
 | -------- | -------- |
 |AreWeOnline|Tom-Cat|
 |CE|Tom-Cat|
+|IconClean|Lemaru|
 |ListDevices|SupremeTurnip|
 |ListGithubReleases|SupremeTurnip|
 |TomCopy|Tom-Cat|
