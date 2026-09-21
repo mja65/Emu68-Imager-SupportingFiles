@@ -1,4 +1,4 @@
-VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 2
+VERSION >NIL: SYS:DEVS/Networks/genet.device VERSION 2
 IF WARN
    IF EXISTS SYS:Prefs/Env-Archive/genet13_Miami.prefs 
       RENAME from SYS:Prefs/Env-Archive/genet13_Miami.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET
@@ -8,7 +8,7 @@ IF WARN
       ENDIF
    ENDIF
 ELSE
-   VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 4
+   VERSION >NIL: SYS:DEVS/Networks/genet.device VERSION 4
    IF WARN
       IF EXISTS SYS:Prefs/Env-Archive/genet3x_Miami.prefs
          RENAME from SYS:Prefs/Env-Archive/genet3x_Miami.prefs to SYS:Prefs/Env-Archive/genet.prefs
@@ -18,7 +18,7 @@ ELSE
          ENDIF
       ENDIF
    ELSE
-      VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 4
+      VERSION >NIL: SYS:DEVS/Networks/genet.device VERSION 4
       IF NOT WARN
          IF EXISTS SYS:Prefs/Env-Archive/genet4x.prefs
             RENAME from SYS:Prefs/Env-Archive/genet4x.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET
