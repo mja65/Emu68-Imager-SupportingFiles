@@ -1,20 +1,44 @@
-IF EXISTS SYS:Prefs/Env-Archive/genet13_Miami.prefs
-   VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 1 REVISION 3
-   IF WARN
+VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 2
+IF WARN
+   IF EXISTS SYS:Prefs/Env-Archive/genet13_Miami.prefs 
       RENAME from SYS:Prefs/Env-Archive/genet13_Miami.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET
-      DELETE SYS:Prefs/Env-Archive/genet3x_Miami.prefs QUIET 
    ELSE
-      RENAME from SYS:Prefs/Env-Archive/genet3x_Miami.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET 
-      DELETE SYS:Prefs/Env-Archive/genet13_Miami.prefs  QUIET
+      IF EXISTS SYS:Prefs/Env-Archive/genet13.prefs
+         RENAME from SYS:Prefs/Env-Archive/genet13.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET
+      ENDIF
    ENDIF
 ELSE
-   IF EXISTS SYS:Prefs/Env-Archive/genet13.prefs
-   VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 1 REVISION 3
+   VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 4
    IF WARN
-         RENAME from SYS:Prefs/Env-Archive/genet13.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET
-      DELETE SYS:Prefs/Env-Archive/genet3x.prefs QUIET 
+      IF EXISTS SYS:Prefs/Env-Archive/genet3x_Miami.prefs
+         RENAME from SYS:Prefs/Env-Archive/genet3x_Miami.prefs to SYS:Prefs/Env-Archive/genet.prefs
+      ELSE
+         IF EXISTS SYS:Prefs/Env-Archive/genet3x.prefs
+            RENAME from SYS:Prefs/Env-Archive/genet3x.prefs to SYS:Prefs/Env-Archive/genet.prefs
+         ENDIF
+      ENDIF
    ELSE
-      RENAME from SYS:Prefs/Env-Archive/genet3x.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET 
-      DELETE SYS:Prefs/Env-Archive/genet13.prefs  QUIET
+      VERSION >NULL: SYS:DEVS/Networks/genet.device VERSION 4
+      IF NOT WARN
+         IF EXISTS SYS:Prefs/Env-Archive/genet4x.prefs
+            RENAME from SYS:Prefs/Env-Archive/genet4x.prefs to SYS:Prefs/Env-Archive/genet.prefs QUIET
+         ENDIF
+      ENDIF
    ENDIF
+ENDIF
+
+IF EXISTS SYS:Prefs/Env-Archive/genet13_Miami.prefs
+   DELETE SYS:Prefs/Env-Archive/genet13_Miami.prefs QUIET
+ENDIF
+IF EXISTS SYS:Prefs/Env-Archive/genet13.prefs
+   DELETE SYS:Prefs/Env-Archive/genet13.prefs QUIET
+ENDIF
+IF EXISTS SYS:Prefs/Env-Archive/genet3x_Miami.prefs
+   DELETE SYS:Prefs/Env-Archive/genet3x_Miami.prefs QUIET 
+ENDIF
+IF EXISTS SYS:Prefs/Env-Archive/genet3x.prefs
+   DELETE SYS:Prefs/Env-Archive/genet3x.prefs QUIET 
+ENDIF
+IF EXISTS SYS:Prefs/Env-Archive/genet4x.prefs
+   DELETE SYS:Prefs/Env-Archive/genet4x.prefs QUIET 
 ENDIF
