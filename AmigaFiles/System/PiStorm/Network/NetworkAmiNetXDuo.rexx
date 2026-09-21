@@ -111,7 +111,7 @@ END
 
 IF action = "CONNECT" then DO
    'Netshutdown >NIL:'
-	If ~KillWirelessManager() then DO
+   If ~KillWirelessManager() then DO
       CALL CloseWindowMessage()
       EXIT 10
    END  
@@ -134,21 +134,21 @@ IF action = "CONNECT" then DO
          EXIT 10
       END
       IF OPEN('f',WirelessprefsPath,'R') then DO
-		   vSSID = ""
-			Do until EOF('f')
-			   If vSSID ~= "" then LEAVE
+         vSSID = ""
+         Do until EOF('f')
+            If vSSID ~= "" then LEAVE
             LineRead = Upper(STRIP(READLN('f')))
             IF POS('SSID=',LineRead) > 0 THEN DO
                parse var LineRead v1'SSID="'vSSID'"'
-		      END
-			END
-		END
+            END
+         END
+      END
       if vSSID="" then DO
          SAY "No SSID found in ""SYS:Prefs/Env-Archive/sys/wireless.prefs""! You need to configure!"
          CALL CloseWindowMessage()
          EXIT 10
-		END
-		IF DEBUG="TRUE" then SAY "SSID found was: "vSSID   
+      END
+      IF DEBUG="TRUE" then SAY "SSID found was: "vSSID   
       If ~KillWirelessManager() then DO
          CALL CloseWindowMessage()
          EXIT 10
@@ -183,7 +183,7 @@ IF action = "CONNECT" then DO
          EXIT 10
       END
    END
-	
+   
    IF device = "GENET.DEVICE" | device = "ANXGENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
          SAY ""
@@ -200,7 +200,7 @@ IF action = "CONNECT" then DO
          EXIT 10
       END   
    END
-		
+      
    IF device = "UAENET.DEVICE" THEN DO
       If SwitchSilentRunning = "FALSE" then DO 
          SAY ""
@@ -267,11 +267,11 @@ IF action = "CONNECT" then DO
             END
             ELSE 'C:SetDST NOASK NOREQ QUIET >NIL:'
             /*
-				If ~SyncTime() THEN DO
+            If ~SyncTime() THEN DO
                CALL CloseWindowMessage()
                EXIT 5
             End
-				*/
+            */
          END         
       END 
       if SwitchSilentRunning = "FALSE" then SAY "Time set and DST applied if applicable"
@@ -362,11 +362,11 @@ KillNetworkShares:
          Line = STRIP(READLN('f'))
          If line = "" then iterate
          parse var Line vDevice';'vRawDosType';'vDosType';'vDeviceName';'vUnit';'vVolume
-			if (upper(vDeviceName))="L:SMB-HANDLER" | (upper(vDeviceName))="L:SMB2-HANDLER" THEN DO
+         if (upper(vDeviceName))="L:SMB-HANDLER" | (upper(vDeviceName))="L:SMB2-HANDLER" THEN DO
             IF DEBUG="TRUE" then say "Running command: "vCmd
             vCmd = 'c:killdev 'vDevice
             vCmd
-			END
+         END
       END
    END
    call close('f')
@@ -383,11 +383,11 @@ KillWirelessManager:
       'break 'ProcessNumber
    END 
    ELSE DO 
-	   IF DEBUG="TRUE" then DO
+      IF DEBUG="TRUE" then DO
          SAY ""
          SAY "Wireless Manager not already running"   
      END
-	END
+   END
 
   Outcome = UNSETENV(WirelessManagerPID)
 
