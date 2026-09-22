@@ -1,8 +1,15 @@
 [pi4]
 arm_boost=1
+
+# If you have a 1st generation RPi4, uncomment the below:
+# arm_freq=1800
+
 [all]
 disable_splash=1
 arm_64bit=1
+
+# Default boot delay is one second. Uncomment this line if you want zero second delay
+#boot_delay=0
 bootcode_delay=1
 
 # Limit total memory size to 2GB for now. Necessary for CM4/Pi4
