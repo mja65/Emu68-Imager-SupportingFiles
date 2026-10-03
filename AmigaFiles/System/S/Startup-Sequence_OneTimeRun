@@ -1,9 +1,9 @@
 FAILAT 21 
-version uaehf.device
+version uaehf.device >NIL: 
 IF NOT FAIL
    SET System "UAE"
 ELSE
-   VERSION brcm-emmc.device >nil: 
+   VERSION brcm-emmc.device >NIL: 
    IF NOT FAIL 
       IF $FIRSTTIMEBOOT EQ "TRUE"
          ECHO "Setting environment as Raspberry Pi 4 (or CM4)"
