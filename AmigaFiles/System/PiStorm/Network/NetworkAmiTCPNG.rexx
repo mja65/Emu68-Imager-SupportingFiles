@@ -401,10 +401,10 @@ LoadAmiTCPNGParams:
      parse var Readlines.i vType';'vParameter';'vValue
      if upper(vType) ~= targetDevice then iterate
      SELECT
-        WHEN upper(vParameter) = "TCPRECEIVE" THEN vCmd = 'roadshowcontrol tcp.recvspace='vValue' >NIL:'
-        WHEN upper(vParameter)= "UDPRECEIVE" THEN vCmd = 'roadshowcontrol udp.recvspace='vValue' >NIL:'
-        WHEN upper(vParameter) = "TCPSEND" THEN vCmd = 'roadshowcontrol tcp.sendspace='vValue' >NIL:'
-        WHEN upper(vParameter) = "UDPSEND" THEN vCmd = 'roadshowcontrol udp.sendspace='vValue' >NIL:'
+        WHEN upper(vParameter) = "TCPRECEIVE" THEN vCmd = 'AmiTCPcontrol tcp.recvspace='vValue' >NIL:'
+        WHEN upper(vParameter)= "UDPRECEIVE" THEN vCmd = 'AmiTCPcontrol udp.recvspace='vValue' >NIL:'
+        WHEN upper(vParameter) = "TCPSEND" THEN vCmd = 'AmiTCPcontrol tcp.sendspace='vValue' >NIL:'
+        WHEN upper(vParameter) = "UDPSEND" THEN vCmd = 'AmiTCPcontrol udp.sendspace='vValue' >NIL:'
         OTHERWISE nop
      end
      if DEBUG="TRUE" then SAY vCmd
