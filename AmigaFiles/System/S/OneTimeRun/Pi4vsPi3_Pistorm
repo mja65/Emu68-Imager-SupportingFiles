@@ -1,6 +1,9 @@
 IF $RpiType EQ "RPi4"
    Echo "Raspberry 4 (or CM4) Found - brcm-emmc.device"
    rename from Sys:Devs/DOSDrivers/SD0Pi4 to Sys:Devs/DOSDrivers/SD0 QUIET
+   IF Exists Sys:Devs/USBHardware/dwc2usb.device
+      DELETE Sys:Devs/USBHardware/dwc2usb.device QUIET
+   ENDIF
    IF $KickstartVersion EQ 3.2
       delete Sys:Tools/HDToolbox.info QUIET
    ENDIF
@@ -15,6 +18,9 @@ ENDIF
 IF $RpiType EQ "RPi3"
    Echo "Raspberry 3 (or Raspberry Zero2) Found - brcm-sdhc.device"
    rename from Sys:Devs/DOSDrivers/SD0Pi3 to Sys:Devs/DOSDrivers/SD0 QUIET
+   IF Exists Sys:Devs/USBHardware/xhci.device
+      DELETE Sys:Devs/USBHardware/xhci.device QUIET
+   ENDIF
    IF $KickstartVersion EQ 3.2
       delete Sys:Tools/HDToolbox.info QUIET
    ENDIF
