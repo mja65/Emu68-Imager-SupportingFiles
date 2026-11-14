@@ -14,10 +14,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download file from Google Drive
+        env:
+          FILE_ID: ${{ vars.WHDLOADFILEID }}
         run: |
           mkdir -p dist
-          
-          FILE_ID="1IhaKPNeqsyfrXVjIK8Ixv82IvAPjb5Iu"
           
           # Download using curl and save cookies
           curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /tmp/gdrive_download
