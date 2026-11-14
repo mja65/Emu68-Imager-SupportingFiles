@@ -1,0 +1,42 @@
+name: WHDLoadWrapper Download from Google Drive and Publish to Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download file from Google Drive
+        run: |
+          mkdir -p dist
+          
+          FILE_ID="1IhaKPNeqsyfrXVjIK8Ixv82IvAPjb5Iu"
+          
+          # Download using curl and save cookies
+          curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${FILE_ID}" > /tmp/gdrive_download
+          
+          # Handle Google Drive's large file confirmation token if prompted
+          CONFIRM=$(awk '/_warning_/ {print $NF}' ./cookie)
+          if [ -n "$CONFIRM" ]; then
+            curl -s -L "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}" -o dist/WHDLoadWrapper.lha
+          else
+            mv /tmp/gdrive_download dist/WHDLoadWrapper.lha
+          fi
+
+      - name: Upload file to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: WhdLoadWrapper
+          name: "WhdLoadWrapper Latest Release"
+          body: "This is a copy of the latest release of the WhdLoadWrapper"
+          files: dist/WHDLoadWrapper.lha
+          overwrite: true
+          draft: false
+          prerelease: false
