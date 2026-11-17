@@ -2,13 +2,21 @@ param(
     [string]$GitHubToken = $env:GITHUB_TOKEN
 )
 
-$CsvPath = Join-Path $PSScriptRoot "SoftwareGithubReleases.csv"
+Write-Host "Starting CSV generation..."
+$ScriptDir = $PSScriptRoot
+if (-not $ScriptDir) {
+    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+}
+
+$CsvPath = Join-Path $ScriptDir "SoftwareGithubReleases.csv"
 if (-not (Test-Path $CsvPath)) {
-    Write-Error "Could not find SoftwareGithubReleases.csv at $CsvPath"
+    Write-Error "CRITICAL: Could not find SoftwareGithubReleases.csv at $CsvPath"
     exit 1
 }
 
 $Repositories = Import-Csv -Path $CsvPath -Delimiter ';'
+Write-Host "Loaded $($Repositories.Count) repositories from configuration."
+
 $RepositoryLookup = $Repositories | Group-Object -Property "SourceLocation" -AsHashTable
 
 $headers = @{
@@ -17,16 +25,22 @@ $headers = @{
 }
 if ($GitHubToken) {
     $headers["Authorization"] = "Bearer $GitHubToken"
+    Write-Host "Using provided GitHub token for API requests."
+} else {
+    Write-Warning "No GitHub token provided. API requests will be unauthenticated and subject to strict rate limits."
 }
 
 $releaseData = foreach ($repo in $Repositories) {
     $Owner = $repo.Owner
     $RepositoryName = $repo.Repository
     $uri = "https://api.github.com/repos/$Owner/$RepositoryName/releases"
-    Write-Host "Looking for $RepositoryName..."
+    Write-Host "Fetching releases for $Owner/$RepositoryName..."
     try {
         $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
-        if (-not $response) { continue }
+        if (-not $response) { 
+            Write-Host "No response data for $RepositoryName"
+            continue 
+        }
         
         foreach ($release in $response) {
             if ($repo.GithubSortSemanticVersion -eq $true) {
@@ -57,7 +71,7 @@ $releaseData = foreach ($repo in $Repositories) {
         }
     } 
     catch {
-        Write-Warning "Could not fetch release for $RepositoryName"
+        Write-Warning "Could not fetch release for $RepositoryName. Error: $_"
     }
 }
 
@@ -74,9 +88,12 @@ $ReleaseDataRevised = foreach ($Line in $releaseData) {
     $line
 } 
 
-# Prepare output directory
-$DistDir = Join-Path $PSScriptRoot "../dist"
-if (!(Test-Path $DistDir)) { New-Item -ItemType Directory -Path $DistDir -Force }
+# Prepare absolute output directory path at repo root dist/
+$RepoRoot = Split-Path -Parent $ScriptDir
+$DistDir = Join-Path $RepoRoot "dist"
+if (!(Test-Path $DistDir)) { 
+    New-Item -ItemType Directory -Path $DistDir -Force | Out-Null
+}
 $CsvOutputPath = Join-Path $DistDir "SoftwareReleases.csv"
 
 # Collect unique SourceLocation mappings
@@ -91,6 +108,20 @@ $csvRows = foreach ($line in $ReleaseDataRevised){
     }
 }
 
+Write-Host "Filtered down to $($csvRows.Count) unique release rows to write."
+
+if (-not $csvRows -or $csvRows.Count -eq 0) {
+    Write-Error "CRITICAL: Zero rows matched your filter criteria. The generated CSV would be empty."
+    exit 1
+}
+
 # Export to CSV with semicolon delimiter
 $csvRows | Export-Csv -Path $CsvOutputPath -NoTypeInformation -Delimiter ';' -Encoding utf8
-Write-Host "Successfully generated CSV at $CsvOutputPath"
+
+# Verify file size post-generation
+$FileInfo = Get-Item $CsvOutputPath
+Write-Host "Successfully generated CSV at $CsvOutputPath. File size: $($FileInfo.Length) bytes."
+if ($FileInfo.Length -eq 0) {
+    Write-Error "CRITICAL: The generated CSV file size is 0 bytes."
+    exit 1
+}
