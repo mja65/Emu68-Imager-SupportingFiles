@@ -20,13 +20,14 @@ Write-Host "Loaded $($Repositories.Count) repositories from configuration."
 $RepositoryLookup = $Repositories | Group-Object -Property "SourceLocation" -AsHashTable
 
 $headers = @{
-    "Accept"               = "vnd.github+json"
-    "X-GitHub-Api-Version" = "2022-11-28"
+    "Accept"               = [string]"application/vnd.github+json"
+    "X-GitHub-Api-Version" = [string]"2022-11-28"
 }
 if ($GitHubToken) {
-    $headers["Authorization"] = "Bearer $GitHubToken"
+    $headers["Authorization"] = [string]"Bearer $GitHubToken"
     Write-Host "Using provided GitHub token for API requests."
-} else {
+}
+else {
     Write-Warning "No GitHub token provided. API requests will be unauthenticated and subject to strict rate limits."
 }
 
