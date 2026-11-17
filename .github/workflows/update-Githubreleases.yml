@@ -1,0 +1,34 @@
+name: Generate and Publish Github Release CSV
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run CSV Generation Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          ./.config/GenerateGithubReleaseCSV.ps1
+
+      - name: Upload file to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: GithubReleaseCSV
+          name: "Github CSV Latest Release"
+          body: "Automated daily export of tracked Amiga GitHub release assets."
+          files: dist/SoftwareReleases.csv
+          overwrite: true
+          draft: false
+          prerelease: false
