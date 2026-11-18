@@ -5,7 +5,7 @@ on:
     - cron: '*/5 * * * *' # Runs at minute 0 of every hour (UTC)
       timezone: "Australia/Melbourne"
   workflow_dispatch:
-
+  push:
 permissions:
   contents: write
 
