@@ -1,9 +1,9 @@
 name: Generate and Publish Github Release CSV
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: '0 * * * *' # Runs at minute 0 of every hour (UTC)
+  workflow_dispatch:
 
 permissions:
   contents: write
