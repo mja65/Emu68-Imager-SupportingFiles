@@ -18,6 +18,9 @@ jobs:
       - name: Run CSV Generation Script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUBRELEASECSVURL: ${{ vars.GITHUBRELEASECSVURL }}
+          GITHUBRELEASECSVGID: ${{ vars.GITHUBRELEASECSVGID }}
+          EMU68IMAGERVERSION: ${{ vars.EMU68IMAGERVERSION }}            
         shell: pwsh
         run: |
           ./.config/GenerateGithubReleaseCSV.ps1
