@@ -32,6 +32,4 @@ jobs:
           name: "Github CSV Latest Release"
           body: "Automated daily export of tracked Amiga GitHub release assets."
           files: dist/SoftwareReleases.csv
-          overwrite_files: true
           draft: false
-          prerelease: false
