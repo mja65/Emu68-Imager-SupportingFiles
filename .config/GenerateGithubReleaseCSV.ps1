@@ -134,8 +134,11 @@ $SourceLocationLookup = $null
 $csvRows = foreach ($line in $ReleaseDataRevised){
     if ($SourceLocationLookup -ne $line.SourceLocation) {
         [PSCustomObject]@{
-            SourceLocation = $line.SourceLocation
-            DownloadURL    = $line.Asset_browser_download_url
+            SourceLocation  = $line.SourceLocation
+            Release_TagName = $line.Release_TagName
+            Digest          = $line.asset_digest
+            Name            = $line.asset_name
+            DownloadURL     = $line.Asset_browser_download_url
         }
         $SourceLocationLookup = $line.SourceLocation
     }
